@@ -20,6 +20,7 @@ import SiteThemePanel, {
   getSavedTheme,
 } from "../../../components/SiteThemePanel";
 import { useEffect, useState } from "react";
+import AuthGuard from "../../../components/AuthGuard";
 
 // Mock data for sites - matching the dashboard data
 const siteData = {
@@ -79,14 +80,36 @@ const horizontalNavItems = [
   { id: 5, label: "Contact", href: "#", active: false },
 ];
 
-export default function SitePage() {
+interface SiteTheme {
+  colorPalette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    surface: string;
+    background: string;
+    text: string;
+    textSecondary: string;
+  };
+  text: {
+    fontFamily: string;
+    fontSize: string;
+  };
+  buttons: {
+    borderRadius: string;
+    padding: string;
+  };
+}
+
+function SitePage() {
   const params = useParams();
   const siteId = Number(params.id);
   const site = siteData[siteId as keyof typeof siteData];
   const [currentSiteColor, setCurrentSiteColor] = useState(
     site?.color || "#3161D1"
   );
-  const [currentSiteTheme, setCurrentSiteTheme] = useState<any>(null);
+  const [, setCurrentSiteTheme] = useState<SiteTheme | null>(
+    null
+  );
 
   // Load saved theme color and complete theme for this site
   useEffect(() => {
@@ -552,5 +575,13 @@ export default function SitePage() {
       {/* Site Theme Panel */}
       <SiteThemePanel siteId={siteId.toString()} siteTheme={currentSiteColor} />
     </div>
+  );
+}
+
+export default function ProtectedSitePage() {
+  return (
+    <AuthGuard>
+      <SitePage />
+    </AuthGuard>
   );
 }

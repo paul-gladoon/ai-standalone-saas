@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Navigation,
   FileText,
@@ -21,6 +22,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import SiteThemePanel from "../../../../components/SiteThemePanel";
+import AuthGuard from "../../../../components/AuthGuard";
 
 // Mock sites data
 const mockSites = {
@@ -121,7 +123,7 @@ interface NavItem {
   children: NavItem[];
 }
 
-export default function NavigationBuilder() {
+function NavigationBuilder() {
   const params = useParams();
   const siteId = params.id as string;
   const site = mockSites[siteId as keyof typeof mockSites] || mockSites.hr;
@@ -390,7 +392,7 @@ export default function NavigationBuilder() {
         {/* Logo */}
         <div className="p-4 border-b border-gray-200">
           <Link href="/">
-            <img src="/shortpoint-logo.svg" alt="ShortPoint" className="h-8" />
+            <Image src="/shortpoint-logo.svg" alt="ShortPoint" width={128} height={32} className="h-8" />
           </Link>
         </div>
 
@@ -669,5 +671,13 @@ export default function NavigationBuilder() {
       {/* Site Theme Panel */}
       <SiteThemePanel siteId={siteId} siteTheme={site.theme} />
     </div>
+  );
+}
+
+export default function ProtectedNavigationBuilder() {
+  return (
+    <AuthGuard>
+      <NavigationBuilder />
+    </AuthGuard>
   );
 }

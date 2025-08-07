@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Navigation,
   FileText,
@@ -24,6 +25,7 @@ import {
   Calendar,
 } from "lucide-react";
 import SiteThemePanel from "../../../../components/SiteThemePanel";
+import AuthGuard from "../../../../components/AuthGuard";
 
 // Mock data for pages
 const mockPages = [
@@ -83,7 +85,7 @@ const mockSites = {
   marketing: { name: "Marketing Department", theme: "#EF4444", color: "red" },
 };
 
-export default function SitePages() {
+function SitePages() {
   const params = useParams();
   const router = useRouter();
   const siteId = params.id as string;
@@ -181,7 +183,7 @@ export default function SitePages() {
         {/* Logo */}
         <div className="p-4 border-b border-gray-200">
           <Link href="/">
-            <img src="/shortpoint-logo.svg" alt="ShortPoint" className="h-8" />
+            <Image src="/shortpoint-logo.svg" alt="ShortPoint" width={128} height={32} className="h-8" />
           </Link>
         </div>
 
@@ -658,5 +660,13 @@ export default function SitePages() {
       {/* Site Theme Panel */}
       <SiteThemePanel siteId={siteId} siteTheme={site.theme} />
     </div>
+  );
+}
+
+export default function ProtectedSitePages() {
+  return (
+    <AuthGuard>
+      <SitePages />
+    </AuthGuard>
   );
 }
