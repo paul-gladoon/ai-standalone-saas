@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { Navigation, FileText, Image as ImageIcon, Users, Palette, Settings, Edit, Save, Eye, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
@@ -106,14 +107,14 @@ export default function SitePage() {
               </a>
             </li>
             <li>
-              <a
-                href="#"
+              <Link
+                href={`/site/${siteId}/pages`}
                 className="flex items-center px-3 py-2 text-xs font-medium text-[#5774A8] hover:text-[#3161D1] hover:bg-[#E7F5FF] hover:bg-opacity-50 rounded-none transition-colors"
                 style={{ lineHeight: '14px' }}
               >
                 <FileText className="w-4 h-4 mr-3" />
                 Pages
-              </a>
+              </Link>
             </li>
             <li>
               <a
