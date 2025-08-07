@@ -7,7 +7,7 @@ import {
   HelpCircle,
   Plus,
   Search,
-  ChevronDown,
+  LogOut,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,6 +16,8 @@ import {
   getSavedTheme,
 } from "../components/SiteThemePanel";
 import { useEffect, useState, useLayoutEffect } from "react";
+import AuthGuard from "../components/AuthGuard";
+import { useAuth } from "../components/providers/AuthProvider";
 
 // Mock data for site collections
 const mockSites = [
@@ -96,9 +98,10 @@ interface SiteTheme {
   };
 }
 
-export default function TenantDashboard() {
+function TenantDashboard() {
   const [siteColors, setSiteColors] = useState<Record<number, string>>({});
   const [siteThemes, setSiteThemes] = useState<Record<number, SiteTheme>>({});
+  const { user, logout } = useAuth();
 
   // Load saved theme colors and complete themes BEFORE painting to prevent flash
   useLayoutEffect(() => {
@@ -194,7 +197,7 @@ export default function TenantDashboard() {
                 Support
               </a>
             </li>
-          </ul>
+                    </ul>
         </nav>
       </div>
 
@@ -220,12 +223,20 @@ export default function TenantDashboard() {
             {/* User Profile */}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-[#3161D1] rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">A</span>
+                <span className="text-white text-sm font-medium">
+                  {user?.name?.[0]?.toUpperCase() || 'U'}
+                </span>
               </div>
               <span className="text-sm font-medium text-[#202224]">
-                Admin User
+                {user?.name || 'User'}
               </span>
-              <ChevronDown className="w-4 h-4 text-[#5774A8]" />
+              <button
+                onClick={logout}
+                className="p-1 text-[#5774A8] hover:text-[#3161D1] transition-colors"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </header>
@@ -302,3 +313,11 @@ export default function TenantDashboard() {
     </div>
   );
 }
+export default function Home() {
+  return (
+    <AuthGuard>
+      <TenantDashboard />
+    </AuthGuard>
+  );
+}
+

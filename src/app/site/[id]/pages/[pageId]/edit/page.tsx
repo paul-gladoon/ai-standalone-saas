@@ -20,6 +20,7 @@ import {
   ListOrdered,
   Link as LinkIcon,
 } from "lucide-react";
+import AuthGuard from "../../../../../../components/AuthGuard";
 
 // Mock page data
 const mockPage = {
@@ -61,7 +62,7 @@ const mockSites = {
   marketing: { name: "Marketing Department", theme: "#EF4444", color: "red" },
 };
 
-export default function PageEditor() {
+function PageEditor() {
   const params = useParams();
   const siteId = params.id as string;
   // const pageId = params.pageId as string; // Will be used to fetch specific page data
@@ -445,5 +446,13 @@ export default function PageEditor() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProtectedPageEditor() {
+  return (
+    <AuthGuard>
+      <PageEditor />
+    </AuthGuard>
   );
 }

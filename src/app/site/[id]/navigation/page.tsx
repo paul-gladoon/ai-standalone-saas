@@ -22,6 +22,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import SiteThemePanel from "../../../../components/SiteThemePanel";
+import AuthGuard from "../../../../components/AuthGuard";
 
 // Mock sites data
 const mockSites = {
@@ -122,7 +123,7 @@ interface NavItem {
   children: NavItem[];
 }
 
-export default function NavigationBuilder() {
+function NavigationBuilder() {
   const params = useParams();
   const siteId = params.id as string;
   const site = mockSites[siteId as keyof typeof mockSites] || mockSites.hr;
@@ -670,5 +671,13 @@ export default function NavigationBuilder() {
       {/* Site Theme Panel */}
       <SiteThemePanel siteId={siteId} siteTheme={site.theme} />
     </div>
+  );
+}
+
+export default function ProtectedNavigationBuilder() {
+  return (
+    <AuthGuard>
+      <NavigationBuilder />
+    </AuthGuard>
   );
 }

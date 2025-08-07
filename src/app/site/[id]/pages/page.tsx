@@ -25,6 +25,7 @@ import {
   Calendar,
 } from "lucide-react";
 import SiteThemePanel from "../../../../components/SiteThemePanel";
+import AuthGuard from "../../../../components/AuthGuard";
 
 // Mock data for pages
 const mockPages = [
@@ -84,7 +85,7 @@ const mockSites = {
   marketing: { name: "Marketing Department", theme: "#EF4444", color: "red" },
 };
 
-export default function SitePages() {
+function SitePages() {
   const params = useParams();
   const router = useRouter();
   const siteId = params.id as string;
@@ -659,5 +660,13 @@ export default function SitePages() {
       {/* Site Theme Panel */}
       <SiteThemePanel siteId={siteId} siteTheme={site.theme} />
     </div>
+  );
+}
+
+export default function ProtectedSitePages() {
+  return (
+    <AuthGuard>
+      <SitePages />
+    </AuthGuard>
   );
 }

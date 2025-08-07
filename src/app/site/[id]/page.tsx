@@ -20,6 +20,7 @@ import SiteThemePanel, {
   getSavedTheme,
 } from "../../../components/SiteThemePanel";
 import { useEffect, useState } from "react";
+import AuthGuard from "../../../components/AuthGuard";
 
 // Mock data for sites - matching the dashboard data
 const siteData = {
@@ -99,7 +100,7 @@ interface SiteTheme {
   };
 }
 
-export default function SitePage() {
+function SitePage() {
   const params = useParams();
   const siteId = Number(params.id);
   const site = siteData[siteId as keyof typeof siteData];
@@ -574,5 +575,13 @@ export default function SitePage() {
       {/* Site Theme Panel */}
       <SiteThemePanel siteId={siteId.toString()} siteTheme={currentSiteColor} />
     </div>
+  );
+}
+
+export default function ProtectedSitePage() {
+  return (
+    <AuthGuard>
+      <SitePage />
+    </AuthGuard>
   );
 }
