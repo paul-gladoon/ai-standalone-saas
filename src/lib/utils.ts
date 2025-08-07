@@ -104,7 +104,7 @@ export function truncateText(text: string, maxLength: number): string {
  * @param searchFields - Fields to search in each object
  * @returns Filtered array
  */
-export function filterBySearch<T extends Record<string, any>>(
+export function filterBySearch<T extends Record<string, unknown>>(
   items: T[],
   searchTerm: string,
   searchFields: (keyof T)[]
@@ -127,7 +127,7 @@ export function filterBySearch<T extends Record<string, any>>(
  * @param direction - Sort direction ('asc' or 'desc')
  * @returns Sorted array
  */
-export function sortByField<T extends Record<string, any>>(
+export function sortByField<T extends Record<string, unknown>>(
   items: T[],
   field: keyof T,
   direction: 'asc' | 'desc' = 'asc'
@@ -148,7 +148,7 @@ export function sortByField<T extends Record<string, any>>(
  * @param delay - Delay in milliseconds
  * @returns Debounced function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {

@@ -79,6 +79,26 @@ const horizontalNavItems = [
   { id: 5, label: "Contact", href: "#", active: false },
 ];
 
+interface SiteTheme {
+  colorPalette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    surface: string;
+    background: string;
+    text: string;
+    textSecondary: string;
+  };
+  text: {
+    fontFamily: string;
+    fontSize: string;
+  };
+  buttons: {
+    borderRadius: string;
+    padding: string;
+  };
+}
+
 export default function SitePage() {
   const params = useParams();
   const siteId = Number(params.id);
@@ -86,7 +106,9 @@ export default function SitePage() {
   const [currentSiteColor, setCurrentSiteColor] = useState(
     site?.color || "#3161D1"
   );
-  const [currentSiteTheme, setCurrentSiteTheme] = useState<any>(null);
+  const [, setCurrentSiteTheme] = useState<SiteTheme | null>(
+    null
+  );
 
   // Load saved theme color and complete theme for this site
   useEffect(() => {

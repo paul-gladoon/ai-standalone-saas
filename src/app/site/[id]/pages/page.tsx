@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Navigation,
   FileText,
@@ -181,7 +182,7 @@ export default function SitePages() {
         {/* Logo */}
         <div className="p-4 border-b border-gray-200">
           <Link href="/">
-            <img src="/shortpoint-logo.svg" alt="ShortPoint" className="h-8" />
+            <Image src="/shortpoint-logo.svg" alt="ShortPoint" width={128} height={32} className="h-8" />
           </Link>
         </div>
 

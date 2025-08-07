@@ -76,14 +76,34 @@ const mockSites = [
   },
 ];
 
+interface SiteTheme {
+  colorPalette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    surface: string;
+    background: string;
+    text: string;
+    textSecondary: string;
+  };
+  text: {
+    fontFamily: string;
+    fontSize: string;
+  };
+  buttons: {
+    borderRadius: string;
+    padding: string;
+  };
+}
+
 export default function TenantDashboard() {
   const [siteColors, setSiteColors] = useState<Record<number, string>>({});
-  const [siteThemes, setSiteThemes] = useState<Record<number, any>>({});
+  const [siteThemes, setSiteThemes] = useState<Record<number, SiteTheme>>({});
 
   // Load saved theme colors and complete themes BEFORE painting to prevent flash
   useLayoutEffect(() => {
     const colors: Record<number, string> = {};
-    const themes: Record<number, any> = {};
+    const themes: Record<number, SiteTheme> = {};
     mockSites.forEach((site) => {
       colors[site.id] = getSavedThemeColor(site.id.toString(), site.color);
       themes[site.id] = getSavedTheme(site.id.toString(), site.color);
