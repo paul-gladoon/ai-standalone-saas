@@ -1,1 +1,0 @@
-# SP_AI_Hackathon
