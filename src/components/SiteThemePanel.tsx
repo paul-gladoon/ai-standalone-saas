@@ -204,13 +204,18 @@ export default function SiteThemePanel({
     key: string,
     value: string
   ) => {
-    setThemeConfig((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [key]: value,
-      },
-    }));
+    setThemeConfig((prev) => {
+      const newConfig = {
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [key]: value,
+        },
+      };
+      // Apply theme immediately for live preview with the new config
+      setTimeout(() => applyThemeToDocument(newConfig), 0);
+      return newConfig;
+    });
   };
 
   const resetToDefault = () => {
@@ -236,79 +241,111 @@ export default function SiteThemePanel({
     console.log(`Theme saved for site ${siteId}`);
   };
 
-  const applyThemeToDocument = useCallback(() => {
-    // Remove any existing theme override style
-    const existingStyle = document.getElementById("site-theme-override");
-    if (existingStyle) {
-      existingStyle.remove();
-    }
+  const applyThemeToDocument = useCallback(
+    (config = themeConfig) => {
+      // Only apply theme if we're on a site page (not dashboard)
+      const currentPath = window.location.pathname;
+      const isSitePage = currentPath.includes("/site/");
 
-    // Create and inject dynamic CSS
-    const style = document.createElement("style");
-    style.id = "site-theme-override";
-    style.textContent = `
-      :root {
-        --color-primary: ${themeConfig.colorPalette.primary} !important;
-        --color-secondary: ${themeConfig.colorPalette.secondary} !important;
-        --color-accent: ${themeConfig.colorPalette.accent} !important;
-        --color-background: ${themeConfig.colorPalette.background} !important;
-        --color-surface: ${themeConfig.colorPalette.surface} !important;
-        --color-text: ${themeConfig.colorPalette.text} !important;
-        --color-text-secondary: ${themeConfig.colorPalette.textSecondary} !important;
-        --font-family: ${themeConfig.text.fontFamily} !important;
-        --font-size: ${themeConfig.text.fontSize} !important;
-        --line-height: ${themeConfig.text.lineHeight} !important;
-        --button-border-radius: ${themeConfig.buttons.borderRadius} !important;
-        --header-height: ${themeConfig.header.height} !important;
-        --footer-height: ${themeConfig.footer.height} !important;
-        --header-bg-color: ${themeConfig.header.backgroundColor} !important;
-        --header-text-color: ${themeConfig.header.textColor} !important;
-        --footer-bg-color: ${themeConfig.footer.backgroundColor} !important;
-        --footer-text-color: ${themeConfig.footer.textColor} !important;
-        --background-main-color: ${themeConfig.background.mainColor} !important;
+      if (!isSitePage) {
+        return; // Don't apply site theme on dashboard
       }
 
-      /* Override inline styles that use the original site color */
-      [style*="${siteTheme}"] {
-        background-color: ${themeConfig.colorPalette.primary} !important;
-        border-color: ${themeConfig.colorPalette.primary} !important;
-        color: ${themeConfig.colorPalette.primary} !important;
+      // Remove any existing theme override style for this site
+      const existingStyle = document.getElementById(
+        `site-theme-override-${siteId}`
+      );
+      if (existingStyle) {
+        existingStyle.remove();
       }
 
-      /* Update specific site elements with dynamic styling */
-      .site-theme-dynamic {
-        background-color: var(--color-primary) !important;
-        color: var(--color-primary) !important;
-        border-color: var(--color-primary) !important;
-      }
-
-      /* Apply theme to text elements */
-      body {
+      // Create and inject dynamic CSS scoped to current site
+      const style = document.createElement("style");
+      style.id = `site-theme-override-${siteId}`;
+      style.textContent = `
+      /* Site-specific theme scope - only apply to site pages */
+      body[data-site-id="${siteId}"] {
+        --color-primary: ${config.colorPalette.primary} !important;
+        --color-secondary: ${config.colorPalette.secondary} !important;
+        --color-accent: ${config.colorPalette.accent} !important;
+        --color-background: ${config.colorPalette.background} !important;
+        --color-surface: ${config.colorPalette.surface} !important;
+        --color-text: ${config.colorPalette.text} !important;
+        --color-text-secondary: ${config.colorPalette.textSecondary} !important;
+        --font-family: ${config.text.fontFamily} !important;
+        --font-size: ${config.text.fontSize} !important;
+        --line-height: ${config.text.lineHeight} !important;
+        --button-border-radius: ${config.buttons.borderRadius} !important;
+        --header-height: ${config.header.height} !important;
+        --footer-height: ${config.footer.height} !important;
+        --header-bg-color: ${config.header.backgroundColor} !important;
+        --header-text-color: ${config.header.textColor} !important;
+        --footer-bg-color: ${config.footer.backgroundColor} !important;
+        --footer-text-color: ${config.footer.textColor} !important;
+        --background-main-color: ${config.background.mainColor} !important;
+        
+        /* Apply theme to body and typography */
         font-family: var(--font-family) !important;
         font-size: var(--font-size) !important;
         line-height: var(--line-height) !important;
         background-color: var(--background-main-color) !important;
       }
 
-      /* Theme buttons */
-      button {
+      /* Override inline styles that use the original site color - only for current site */
+      body[data-site-id="${siteId}"] [style*="${siteTheme}"] {
+        background-color: ${config.colorPalette.primary} !important;
+        border-color: ${config.colorPalette.primary} !important;
+        color: ${config.colorPalette.primary} !important;
+      }
+
+      /* Site-specific dynamic styling */
+      body[data-site-id="${siteId}"] .site-theme-dynamic {
+        background-color: var(--color-primary) !important;
+        color: var(--color-primary) !important;
+        border-color: var(--color-primary) !important;
+      }
+
+      /* Theme buttons - only for current site */
+      body[data-site-id="${siteId}"] button {
         border-radius: var(--button-border-radius) !important;
       }
     `;
 
-    document.head.appendChild(style);
+      document.head.appendChild(style);
 
-    // Force repaint by slightly changing a harmless style property
-    document.body.style.transform = "translateZ(0)";
-    requestAnimationFrame(() => {
-      document.body.style.transform = "";
-    });
-  }, [themeConfig, siteTheme]);
+      // Add site ID to body for scoping
+      document.body.setAttribute("data-site-id", siteId);
+
+      // Force repaint by slightly changing a harmless style property
+      document.body.style.transform = "translateZ(0)";
+      requestAnimationFrame(() => {
+        document.body.style.transform = "";
+      });
+    },
+    [themeConfig, siteTheme, siteId]
+  );
+
+  // Cleanup function to remove site-specific theme styles
+  const cleanupThemeStyles = useCallback(() => {
+    const existingStyle = document.getElementById(
+      `site-theme-override-${siteId}`
+    );
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    // Remove site ID from body
+    document.body.removeAttribute("data-site-id");
+  }, [siteId]);
 
   // Apply theme on mount and when config changes (persistent theme)
   useEffect(() => {
     applyThemeToDocument();
-  }, [themeConfig, applyThemeToDocument]);
+
+    // Cleanup when component unmounts or site changes
+    return () => {
+      cleanupThemeStyles();
+    };
+  }, [themeConfig, applyThemeToDocument, cleanupThemeStyles]);
 
   // Apply theme immediately when panel is opened for live preview
   useEffect(() => {

@@ -106,15 +106,9 @@ export default function TenantDashboard() {
   }, []);
 
   return (
-    <div
-      className="flex h-screen"
-      style={{ backgroundColor: "var(--color-background)" }}
-    >
+    <div className="flex h-screen bg-[#f5f6fa]">
       {/* Fixed Left Sidebar - 230px width */}
-      <div
-        className="w-[230px] border-r border-[#eaeaea] flex flex-col"
-        style={{ backgroundColor: "var(--color-surface)" }}
-      >
+      <div className="w-[230px] bg-white border-r border-[#eaeaea] flex flex-col">
         {/* Logo Section */}
         <div className="p-6 border-b border-[#eaeaea]">
           <Image
@@ -176,17 +170,9 @@ export default function TenantDashboard() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header Bar */}
-        <header
-          className="border-b border-[#eaeaea] px-6 py-4 flex items-center justify-between"
-          style={{ backgroundColor: "var(--color-surface)" }}
-        >
+        <header className="bg-white border-b border-[#eaeaea] px-6 py-4 flex items-center justify-between">
           <div>
-            <h1
-              className="text-lg font-semibold"
-              style={{ color: "var(--color-text)" }}
-            >
-              My Sites
-            </h1>
+            <h1 className="text-lg font-semibold text-[#202224]">My Sites</h1>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -229,10 +215,7 @@ export default function TenantDashboard() {
               const currentColor = siteColors[site.id] || site.color;
               return (
                 <Link key={site.id} href={`/site/${site.id}`}>
-                  <div
-                    className="rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group"
-                    style={{ backgroundColor: "var(--color-surface)" }}
-                  >
+                  <div className="bg-white rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group">
                     {/* Site Image */}
                     <div className="mb-4">
                       <div
@@ -244,18 +227,12 @@ export default function TenantDashboard() {
                     </div>
 
                     {/* Site Name */}
-                    <h3
-                      className="text-lg font-semibold mb-2"
-                      style={{ color: "var(--color-text)" }}
-                    >
+                    <h3 className="text-lg font-semibold text-[#202224] mb-2">
                       {site.name}
                     </h3>
 
                     {/* Site URL */}
-                    <p
-                      className="text-sm mb-4"
-                      style={{ color: "var(--color-text-secondary)" }}
-                    >
+                    <p className="text-sm text-[#5774A8] mb-4">
                       {site.department.toLowerCase()}.company.com
                     </p>
                   </div>
