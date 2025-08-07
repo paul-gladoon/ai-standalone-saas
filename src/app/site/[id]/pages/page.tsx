@@ -21,7 +21,7 @@ import {
   Filter,
   SortAsc,
   SortDesc,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import SiteThemePanel from "../../../../components/SiteThemePanel";
 
@@ -34,7 +34,7 @@ const mockPages = [
     status: "Published",
     createdDate: "2024-01-15",
     modifiedDate: "2024-01-20",
-    author: "John Doe"
+    author: "John Doe",
   },
   {
     id: "page-2",
@@ -43,7 +43,7 @@ const mockPages = [
     status: "Published",
     createdDate: "2024-01-10",
     modifiedDate: "2024-01-18",
-    author: "Jane Smith"
+    author: "Jane Smith",
   },
   {
     id: "page-3",
@@ -52,7 +52,7 @@ const mockPages = [
     status: "Draft",
     createdDate: "2024-01-22",
     modifiedDate: "2024-01-22",
-    author: "Mike Johnson"
+    author: "Mike Johnson",
   },
   {
     id: "page-4",
@@ -61,7 +61,7 @@ const mockPages = [
     status: "Published",
     createdDate: "2024-01-05",
     modifiedDate: "2024-01-15",
-    author: "Sarah Wilson"
+    author: "Sarah Wilson",
   },
   {
     id: "page-5",
@@ -70,17 +70,17 @@ const mockPages = [
     status: "Archived",
     createdDate: "2023-12-20",
     modifiedDate: "2024-01-10",
-    author: "Tom Brown"
-  }
+    author: "Tom Brown",
+  },
 ];
 
 // Mock sites data
 const mockSites = {
-  "hr": { name: "HR Department", theme: "#10B981", color: "emerald" },
-  "finance": { name: "Finance Department", theme: "#3B82F6", color: "blue" },
-  "it": { name: "IT Department", theme: "#8B5CF6", color: "purple" },
-  "dev": { name: "Development Team", theme: "#F59E0B", color: "amber" },
-  "marketing": { name: "Marketing Department", theme: "#EF4444", color: "red" }
+  hr: { name: "HR Department", theme: "#10B981", color: "emerald" },
+  finance: { name: "Finance Department", theme: "#3B82F6", color: "blue" },
+  it: { name: "IT Department", theme: "#8B5CF6", color: "purple" },
+  dev: { name: "Development Team", theme: "#F59E0B", color: "amber" },
+  marketing: { name: "Marketing Department", theme: "#EF4444", color: "red" },
 };
 
 export default function SitePages() {
@@ -99,15 +99,17 @@ export default function SitePages() {
 
   // Filter and sort pages
   const filteredPages = mockPages
-    .filter(page => {
-      const matchesSearch = page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           page.slug.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "All" || page.status === statusFilter;
+    .filter((page) => {
+      const matchesSearch =
+        page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        page.slug.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === "All" || page.status === statusFilter;
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      let aValue = a[sortField as keyof typeof a];
-      let bValue = b[sortField as keyof typeof b];
+      let aValue: string | number = a[sortField as keyof typeof a];
+      let bValue: string | number = b[sortField as keyof typeof b];
 
       if (sortField === "createdDate" || sortField === "modifiedDate") {
         aValue = new Date(aValue as string).getTime();
@@ -131,9 +133,9 @@ export default function SitePages() {
   };
 
   const handleSelectPage = (pageId: string) => {
-    setSelectedPages(prev =>
+    setSelectedPages((prev) =>
       prev.includes(pageId)
-        ? prev.filter(id => id !== pageId)
+        ? prev.filter((id) => id !== pageId)
         : [...prev, pageId]
     );
   };
@@ -142,7 +144,7 @@ export default function SitePages() {
     if (selectedPages.length === filteredPages.length) {
       setSelectedPages([]);
     } else {
-      setSelectedPages(filteredPages.map(page => page.id));
+      setSelectedPages(filteredPages.map((page) => page.id));
     }
   };
 
@@ -150,21 +152,25 @@ export default function SitePages() {
     const statusStyles = {
       Published: "bg-green-100 text-green-800 border-green-200",
       Draft: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      Archived: "bg-gray-100 text-gray-800 border-gray-200"
+      Archived: "bg-gray-100 text-gray-800 border-gray-200",
     };
 
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded border ${statusStyles[status as keyof typeof statusStyles]}`}>
+      <span
+        className={`px-2 py-1 text-xs font-medium rounded border ${
+          statusStyles[status as keyof typeof statusStyles]
+        }`}
+      >
         {status}
       </span>
     );
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -246,9 +252,13 @@ export default function SitePages() {
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link href="/" className="hover:text-[#3161D1]">Dashboard</Link>
+              <Link href="/" className="hover:text-[#3161D1]">
+                Dashboard
+              </Link>
               <span>›</span>
-              <Link href={`/site/${siteId}`} className="hover:text-[#3161D1]">{site.name}</Link>
+              <Link href={`/site/${siteId}`} className="hover:text-[#3161D1]">
+                {site.name}
+              </Link>
               <span>›</span>
               <span className="font-medium text-gray-900">Pages</span>
             </div>
@@ -276,7 +286,9 @@ export default function SitePages() {
             {/* Table Header */}
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">Site Pages</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Site Pages
+                </h2>
 
                 <div className="flex items-center space-x-4">
                   {/* Search */}
@@ -347,9 +359,12 @@ export default function SitePages() {
                     >
                       <div className="flex items-center">
                         Page Name
-                        {sortField === "title" && (
-                          sortDirection === "asc" ? <SortAsc className="ml-1 w-4 h-4" /> : <SortDesc className="ml-1 w-4 h-4" />
-                        )}
+                        {sortField === "title" &&
+                          (sortDirection === "asc" ? (
+                            <SortAsc className="ml-1 w-4 h-4" />
+                          ) : (
+                            <SortDesc className="ml-1 w-4 h-4" />
+                          ))}
                       </div>
                     </th>
                     <th
@@ -358,9 +373,12 @@ export default function SitePages() {
                     >
                       <div className="flex items-center">
                         Status
-                        {sortField === "status" && (
-                          sortDirection === "asc" ? <SortAsc className="ml-1 w-4 h-4" /> : <SortDesc className="ml-1 w-4 h-4" />
-                        )}
+                        {sortField === "status" &&
+                          (sortDirection === "asc" ? (
+                            <SortAsc className="ml-1 w-4 h-4" />
+                          ) : (
+                            <SortDesc className="ml-1 w-4 h-4" />
+                          ))}
                       </div>
                     </th>
                     <th
@@ -369,9 +387,12 @@ export default function SitePages() {
                     >
                       <div className="flex items-center">
                         Created Date
-                        {sortField === "createdDate" && (
-                          sortDirection === "asc" ? <SortAsc className="ml-1 w-4 h-4" /> : <SortDesc className="ml-1 w-4 h-4" />
-                        )}
+                        {sortField === "createdDate" &&
+                          (sortDirection === "asc" ? (
+                            <SortAsc className="ml-1 w-4 h-4" />
+                          ) : (
+                            <SortDesc className="ml-1 w-4 h-4" />
+                          ))}
                       </div>
                     </th>
                     <th
@@ -380,9 +401,12 @@ export default function SitePages() {
                     >
                       <div className="flex items-center">
                         Modified Date
-                        {sortField === "modifiedDate" && (
-                          sortDirection === "asc" ? <SortAsc className="ml-1 w-4 h-4" /> : <SortDesc className="ml-1 w-4 h-4" />
-                        )}
+                        {sortField === "modifiedDate" &&
+                          (sortDirection === "asc" ? (
+                            <SortAsc className="ml-1 w-4 h-4" />
+                          ) : (
+                            <SortDesc className="ml-1 w-4 h-4" />
+                          ))}
                       </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -408,8 +432,12 @@ export default function SitePages() {
                         <div className="flex items-center">
                           <FileText className="w-5 h-5 text-gray-400 mr-3" />
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{page.title}</div>
-                            <div className="text-sm text-gray-500">/{page.slug}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {page.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              /{page.slug}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -435,7 +463,11 @@ export default function SitePages() {
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             className="text-blue-600 hover:text-blue-900"
-                            onClick={() => router.push(`/site/${siteId}/pages/${page.id}/edit`)}
+                            onClick={() =>
+                              router.push(
+                                `/site/${siteId}/pages/${page.id}/edit`
+                              )
+                            }
                           >
                             <Edit className="w-4 h-4" />
                           </button>
@@ -463,14 +495,15 @@ export default function SitePages() {
             {filteredPages.length === 0 && (
               <div className="text-center py-12">
                 <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No pages found</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No pages found
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   {searchTerm || statusFilter !== "All"
                     ? "Try adjusting your search or filter criteria."
-                    : "Get started by creating your first page."
-                  }
+                    : "Get started by creating your first page."}
                 </p>
-                {(!searchTerm && statusFilter === "All") && (
+                {!searchTerm && statusFilter === "All" && (
                   <div className="mt-6">
                     <button
                       onClick={() => setShowCreateModal(true)}
@@ -499,12 +532,22 @@ export default function SitePages() {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredPages.length}</span> of{' '}
-                      <span className="font-medium">{filteredPages.length}</span> results
+                      Showing <span className="font-medium">1</span> to{" "}
+                      <span className="font-medium">
+                        {filteredPages.length}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {filteredPages.length}
+                      </span>{" "}
+                      results
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
                       <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                         Previous
                       </button>
@@ -528,7 +571,9 @@ export default function SitePages() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Page</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Create New Page
+              </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -584,9 +629,12 @@ export default function SitePages() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Page</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Delete Page
+              </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Are you sure you want to delete this page? This action cannot be undone.
+                Are you sure you want to delete this page? This action cannot be
+                undone.
               </p>
               <div className="flex items-center justify-end space-x-3">
                 <button
@@ -608,11 +656,7 @@ export default function SitePages() {
       )}
 
       {/* Site Theme Panel */}
-      <SiteThemePanel
-        siteId={siteId}
-        siteName={site.name}
-        siteTheme={site.theme}
-      />
+      <SiteThemePanel siteId={siteId} siteTheme={site.theme} />
     </div>
   );
 }

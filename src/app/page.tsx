@@ -1,8 +1,18 @@
 "use client";
 
-import { Building2, Settings, FileText, HelpCircle, Plus, Search, ChevronDown } from "lucide-react";
+import {
+  Building2,
+  Settings,
+  FileText,
+  HelpCircle,
+  Plus,
+  Search,
+  ChevronDown,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getSavedThemeColor } from "../components/SiteThemePanel";
+import { useEffect, useState } from "react";
 
 // Mock data for site collections
 const mockSites = [
@@ -15,7 +25,7 @@ const mockSites = [
     color: "#FF6B6B",
     pages: 12,
     members: 8,
-    description: "Employee policies, benefits, and HR resources"
+    description: "Employee policies, benefits, and HR resources",
   },
   {
     id: 2,
@@ -26,7 +36,7 @@ const mockSites = [
     color: "#4ECDC4",
     pages: 8,
     members: 5,
-    description: "Financial reports, budgets, and expense tracking"
+    description: "Financial reports, budgets, and expense tracking",
   },
   {
     id: 3,
@@ -37,7 +47,7 @@ const mockSites = [
     color: "#45B7D1",
     pages: 15,
     members: 12,
-    description: "Technical support, system documentation, and tools"
+    description: "Technical support, system documentation, and tools",
   },
   {
     id: 4,
@@ -48,7 +58,7 @@ const mockSites = [
     color: "#3161D1",
     pages: 10,
     members: 6,
-    description: "Codebase, project management, and sprint planning"
+    description: "Codebase, project management, and sprint planning",
   },
   {
     id: 5,
@@ -59,11 +69,44 @@ const mockSites = [
     color: "#7BC043",
     pages: 7,
     members: 4,
-    description: "Campaigns, brand guidelines, and content assets"
-  }
+    description: "Campaigns, brand guidelines, and content assets",
+  },
 ];
 
 export default function TenantDashboard() {
+  const [siteColors, setSiteColors] = useState<Record<number, string>>({});
+
+  // Load saved theme colors for all sites on mount
+  useEffect(() => {
+    const loadColors = () => {
+      const colors: Record<number, string> = {};
+      mockSites.forEach((site) => {
+        colors[site.id] = getSavedThemeColor(site.id.toString(), site.color);
+      });
+      setSiteColors(colors);
+    };
+
+    loadColors();
+
+    // Listen for theme updates
+    const handleThemeUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const siteId = parseInt(customEvent.detail?.siteId);
+      if (siteId && customEvent.detail?.theme?.colorPalette?.primary) {
+        setSiteColors((prev) => ({
+          ...prev,
+          [siteId]: customEvent.detail.theme.colorPalette.primary,
+        }));
+      }
+    };
+
+    window.addEventListener("themeUpdated", handleThemeUpdate);
+
+    return () => {
+      window.removeEventListener("themeUpdated", handleThemeUpdate);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen bg-[#f5f6fa]">
       {/* Fixed Left Sidebar - 230px width */}
@@ -86,7 +129,7 @@ export default function TenantDashboard() {
               <a
                 href="#"
                 className="flex items-center px-3 py-2 text-xs font-medium text-[#3161D1] bg-[#E7F5FF] rounded-none"
-                style={{ lineHeight: '14px' }}
+                style={{ lineHeight: "14px" }}
               >
                 <Building2 className="w-4 h-4 mr-3" />
                 Sites
@@ -96,7 +139,7 @@ export default function TenantDashboard() {
               <a
                 href="#"
                 className="flex items-center px-3 py-2 text-xs font-medium text-[#5774A8] hover:text-[#3161D1] hover:bg-[#E7F5FF] hover:bg-opacity-50 rounded-none transition-colors"
-                style={{ lineHeight: '14px' }}
+                style={{ lineHeight: "14px" }}
               >
                 <FileText className="w-4 h-4 mr-3" />
                 Licensing
@@ -106,7 +149,7 @@ export default function TenantDashboard() {
               <a
                 href="#"
                 className="flex items-center px-3 py-2 text-xs font-medium text-[#5774A8] hover:text-[#3161D1] hover:bg-[#E7F5FF] hover:bg-opacity-50 rounded-none transition-colors"
-                style={{ lineHeight: '14px' }}
+                style={{ lineHeight: "14px" }}
               >
                 <Settings className="w-4 h-4 mr-3" />
                 Tenant Settings
@@ -116,7 +159,7 @@ export default function TenantDashboard() {
               <a
                 href="#"
                 className="flex items-center px-3 py-2 text-xs font-medium text-[#5774A8] hover:text-[#3161D1] hover:bg-[#E7F5FF] hover:bg-opacity-50 rounded-none transition-colors"
-                style={{ lineHeight: '14px' }}
+                style={{ lineHeight: "14px" }}
               >
                 <HelpCircle className="w-4 h-4 mr-3" />
                 Support
@@ -128,7 +171,7 @@ export default function TenantDashboard() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
-                {/* Header Bar */}
+        {/* Header Bar */}
         <header className="bg-white border-b border-[#eaeaea] px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-[#202224]">My Sites</h1>
@@ -150,7 +193,9 @@ export default function TenantDashboard() {
               <div className="w-8 h-8 bg-[#3161D1] rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">A</span>
               </div>
-              <span className="text-sm font-medium text-[#202224]">Admin User</span>
+              <span className="text-sm font-medium text-[#202224]">
+                Admin User
+              </span>
               <ChevronDown className="w-4 h-4 text-[#5774A8]" />
             </div>
           </div>
@@ -168,27 +213,34 @@ export default function TenantDashboard() {
 
           {/* Site Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockSites.map((site) => (
-              <Link key={site.id} href={`/site/${site.id}`}>
-                <div className="bg-white rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group">
-                  {/* Site Image */}
-                  <div className="mb-4">
-                    <div
-                      className="w-full h-32 rounded-lg flex items-center justify-center text-white font-semibold text-lg"
-                      style={{ backgroundColor: site.color }}
-                    >
-                      {site.department}
+            {mockSites.map((site) => {
+              const currentColor = siteColors[site.id] || site.color;
+              return (
+                <Link key={site.id} href={`/site/${site.id}`}>
+                  <div className="bg-white rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group">
+                    {/* Site Image */}
+                    <div className="mb-4">
+                      <div
+                        className="w-full h-32 rounded-lg flex items-center justify-center text-white font-semibold text-lg"
+                        style={{ backgroundColor: currentColor }}
+                      >
+                        {site.department}
+                      </div>
                     </div>
+
+                    {/* Site Name */}
+                    <h3 className="text-lg font-semibold text-[#202224] mb-2">
+                      {site.name}
+                    </h3>
+
+                    {/* Site URL */}
+                    <p className="text-sm text-[#5774A8] mb-4">
+                      {site.department.toLowerCase()}.company.com
+                    </p>
                   </div>
-
-                  {/* Site Name */}
-                  <h3 className="text-lg font-semibold text-[#202224] mb-2">{site.name}</h3>
-
-                  {/* Site URL */}
-                  <p className="text-sm text-[#5774A8] mb-4">{site.department.toLowerCase()}.company.com</p>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </main>
       </div>
