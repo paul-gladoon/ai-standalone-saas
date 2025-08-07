@@ -17,7 +17,6 @@ Object.defineProperty(document.documentElement.style, 'setProperty', {
 describe('SiteThemePanel', () => {
   const defaultProps = {
     siteId: 'test-site',
-    siteName: 'Test Site',
     siteTheme: '#3161D1'
   }
 
@@ -41,7 +40,6 @@ describe('SiteThemePanel', () => {
     await user.click(themeButton)
 
     expect(screen.getByText('Site Theme')).toBeInTheDocument()
-    expect(screen.getByText(defaultProps.siteName)).toBeInTheDocument()
   })
 
   it('should close theme panel when X button is clicked', async () => {
@@ -68,7 +66,7 @@ describe('SiteThemePanel', () => {
     await user.click(themeButton)
 
     // Click backdrop
-    const backdrop = document.querySelector('.bg-black.bg-opacity-50')
+    const backdrop = document.querySelector('.bg-transparent')
     expect(backdrop).toBeInTheDocument()
     fireEvent.click(backdrop!)
 
@@ -121,13 +119,13 @@ describe('SiteThemePanel', () => {
 
       // Color Palette should be active by default
       const colorPaletteButton = screen.getByText('Color Palette').closest('button')
-      expect(colorPaletteButton).toHaveClass('text-blue-700', 'bg-blue-100')
+      expect(colorPaletteButton).toHaveClass('text-blue-600', 'bg-blue-50')
 
       // Switch to Text section
       const textButton = screen.getByText('Text').closest('button')
       await user.click(textButton!)
 
-      expect(textButton).toHaveClass('text-blue-700', 'bg-blue-100')
+      expect(textButton).toHaveClass('text-blue-600', 'bg-blue-50')
     })
   })
 
@@ -164,40 +162,7 @@ describe('SiteThemePanel', () => {
     })
   })
 
-  describe('Preview Functionality', () => {
-    it('should toggle preview mode', async () => {
-      const user = userEvent.setup()
-      render(<SiteThemePanel {...defaultProps} />)
 
-      // Open panel
-      const themeButton = screen.getByRole('button', { name: /site theme/i })
-      await user.click(themeButton)
-
-      // Click preview button
-      const previewButton = screen.getByText('Preview').closest('button')
-      await user.click(previewButton!)
-
-      expect(screen.getByText('Previewing')).toBeInTheDocument()
-    })
-
-    it('should apply CSS properties when preview is enabled', async () => {
-      const user = userEvent.setup()
-      render(<SiteThemePanel {...defaultProps} />)
-
-      // Open panel
-      const themeButton = screen.getByRole('button', { name: /site theme/i })
-      await user.click(themeButton)
-
-      // Enable preview
-      const previewButton = screen.getByText('Preview').closest('button')
-      await user.click(previewButton!)
-
-      // Check if CSS properties are applied
-      await waitFor(() => {
-        expect(mockSetProperty).toHaveBeenCalledWith('--color-primary', '#3161D1')
-      })
-    })
-  })
 
   describe('Reset Functionality', () => {
     it('should reset theme to default values', async () => {

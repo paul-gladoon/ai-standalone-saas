@@ -234,15 +234,27 @@ export default function SiteThemePanel({
 }: SiteThemePanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("colorPalette");
-  const [themeConfig, setThemeConfig] = useState<ThemeConfig>(() =>
-    loadSiteTheme(siteId, siteTheme)
-  );
+  const [themeConfig, setThemeConfig] = useState<ThemeConfig>(() => ({
+    ...defaultTheme,
+    colorPalette: {
+      ...defaultTheme.colorPalette,
+      primary: siteTheme,
+    },
+  }));
+  const [isClient, setIsClient] = useState(false);
 
-  // Load site-specific theme when siteId changes
+  // Set client flag after hydration
   useEffect(() => {
-    const siteThemeConfig = loadSiteTheme(siteId, siteTheme);
-    setThemeConfig(siteThemeConfig);
-  }, [siteId, siteTheme]);
+    setIsClient(true);
+  }, []);
+
+  // Load site-specific theme when siteId changes (only on client)
+  useEffect(() => {
+    if (isClient) {
+      const siteThemeConfig = loadSiteTheme(siteId, siteTheme);
+      setThemeConfig(siteThemeConfig);
+    }
+  }, [siteId, siteTheme, isClient]);
 
   const updateThemeConfig = (
     section: keyof ThemeConfig,
@@ -328,7 +340,7 @@ export default function SiteThemePanel({
         --footer-bg-color: ${config.footer.backgroundColor} !important;
         --footer-text-color: ${config.footer.textColor} !important;
         --background-main-color: ${config.background.mainColor} !important;
-        
+
         /* Apply theme to body and typography */
         font-family: var(--font-family) !important;
         font-size: var(--font-size) !important;
@@ -797,7 +809,9 @@ export default function SiteThemePanel({
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-40 flex items-center justify-center"
-        style={{ backgroundColor: themeConfig.colorPalette.primary }}
+        style={{
+          backgroundColor: isClient ? themeConfig.colorPalette.primary : siteTheme
+        }}
         title="Site Theme"
       >
         <Palette className="w-6 h-6 text-white" />
@@ -874,7 +888,9 @@ export default function SiteThemePanel({
                 <button
                   onClick={saveTheme}
                   className="px-4 py-2 text-sm font-medium text-white rounded-md transition-colors"
-                  style={{ backgroundColor: themeConfig.colorPalette.primary }}
+                  style={{
+                    backgroundColor: isClient ? themeConfig.colorPalette.primary : siteTheme
+                  }}
                 >
                   <Save className="w-4 h-4 mr-2 inline" />
                   Save

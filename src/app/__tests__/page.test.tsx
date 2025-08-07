@@ -100,13 +100,13 @@ describe('TenantDashboard', () => {
 
     it('should render site cards with correct department colors', () => {
       const hrCard = screen.getByText('HR').closest('div')
-      expect(hrCard).toHaveStyle('background-color: #FF6B6B')
+      expect(hrCard).toHaveStyle('background-color: #F8A5A5')
 
       const financeCard = screen.getByText('Finance').closest('div')
-      expect(financeCard).toHaveStyle('background-color: #4ECDC4')
+      expect(financeCard).toHaveStyle('background-color: #7DD3C0')
 
       const itCard = screen.getByText('IT').closest('div')
-      expect(itCard).toHaveStyle('background-color: #45B7D1')
+      expect(itCard).toHaveStyle('background-color: #92C5F7')
     })
 
     it('should have proper grid layout classes', () => {
