@@ -23,6 +23,7 @@ import {
   SortDesc,
   Calendar
 } from "lucide-react";
+import SiteThemePanel from "../../../../components/SiteThemePanel";
 
 // Mock data for pages
 const mockPages = [
@@ -605,6 +606,13 @@ export default function SitePages() {
           </div>
         </div>
       )}
+
+      {/* Site Theme Panel */}
+      <SiteThemePanel
+        siteId={siteId}
+        siteName={site.name}
+        siteTheme={site.theme}
+      />
     </div>
   );
 }

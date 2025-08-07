@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Navigation, FileText, Image as ImageIcon, Users, Palette, Settings, Edit, Save, Eye, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import SiteThemePanel from "../../../components/SiteThemePanel";
 
 // Mock data for sites - matching the dashboard data
 const siteData = {
@@ -97,14 +98,14 @@ export default function SitePage() {
           </div>
           <ul className="space-y-1">
             <li>
-              <a
-                href="#"
+              <Link
+                href={`/site/${siteId}/navigation`}
                 className="flex items-center px-3 py-2 text-xs font-medium text-[#3161D1] bg-[#E7F5FF] rounded-none"
                 style={{ lineHeight: '14px' }}
               >
                 <Navigation className="w-4 h-4 mr-3" />
                 Navigation
-              </a>
+              </Link>
             </li>
             <li>
               <Link
@@ -353,6 +354,13 @@ export default function SitePage() {
           </div>
         </main>
       </div>
+
+      {/* Site Theme Panel */}
+      <SiteThemePanel
+        siteId={siteId.toString()}
+        siteName={site.name}
+        siteTheme={site.color}
+      />
     </div>
   );
 }

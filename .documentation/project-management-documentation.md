@@ -44,6 +44,27 @@ Tasks are ordered chronologically from top to bottom.
   - ✅ Build live preview mode for content review before publishing
   - ✅ Integrate navigation with site sidebar and breadcrumb navigation
   - ✅ Add proper routing (/site/[id]/pages and /site/[id]/pages/[pageId]/edit)
+- ✅ **Navigation Builder - Drag-and-drop menu creation** (COMPLETED)
+  - ✅ Create comprehensive navigation structure editor with drag-and-drop functionality
+  - ✅ Implement menu item creation, editing, and deletion capabilities
+  - ✅ Add support for hierarchical menus with parent-child relationships
+  - ✅ Build live preview of navigation structure with site theming
+  - ✅ Include external and internal link support with visual indicators
+  - ✅ Add expandable/collapsible menu items for better organization
+  - ✅ Integrate with site sidebar navigation and breadcrumb system
+  - ✅ Provide intuitive drag-and-drop reordering of menu items
+- ✅ **Site Theme Management System** (COMPLETED)
+  - ✅ Create floating theme panel accessible from bottom-right of all site pages
+  - ✅ Build comprehensive color palette customization (primary, secondary, accent, background, surface, text)
+  - ✅ Implement text styling controls (font family, size, line height, weight)
+  - ✅ Add button customization (border radius, padding, styling)
+  - ✅ Create background settings (color, pattern, opacity)
+  - ✅ Build header customization (background, text color, height, borders)
+  - ✅ Add footer customization (background, text color, height, borders)
+  - ✅ Implement utilities settings (shadows, borders, spacing)
+  - ✅ Add live preview mode with real-time theme application
+  - ✅ Include reset to default and save functionality
+  - ✅ Integrate with all site pages (home, pages, navigation, etc.)
 
 ## Pending Tasks
 Tasks are prioritized by their order in the associated list.
@@ -52,20 +73,9 @@ Tasks are prioritized by their order in the associated list.
 **Recommendation: Start in design mode - focus on creating the user interface with mock data before any database integration.**
 
 #### Priority 1 (MVP) - Core Features
-- 🎯 **Navigation Builder - Drag-and-drop menu creation**
-  - Build Navigation structure editor (mock drag-and-drop)
-  - Create menu item management interface
-  - Implement drag-and-drop functionality for menu reordering
-  - Add menu item creation and editing capabilities
+*All core MVP features have been completed!*
 
 #### Priority 2 (Enhanced) - Advanced Features
-- 🎯 **Theme Customization - Color and style controls**
-  - Create color picker components
-  - Build theme preview functionality
-  - Add font and styling controls
-  - Implement live preview updates
-  - Save theme configurations to mock storage
-
 - 🎯 **Asset Management Page - File upload and organization**
   - Create file upload mock interface
   - Build asset grid with preview capabilities
