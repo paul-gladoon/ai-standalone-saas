@@ -5,9 +5,9 @@
   --foreground: #171717;
 
   /* Site theme custom properties */
-  --color-primary: #3161d1;
-  --color-secondary: #5774a8;
-  --color-accent: #10b981;
+  --color-primary: #8b9fe6; /* Soft lavender blue */
+  --color-secondary: #a4b5d1;
+  --color-accent: #7dd3c0; /* Soft mint green */
   --color-background: #f5f6fa;
   --color-surface: #ffffff;
   --color-text: #1f2937;

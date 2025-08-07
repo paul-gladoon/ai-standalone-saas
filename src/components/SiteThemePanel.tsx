@@ -62,9 +62,9 @@ interface ThemeConfig {
 
 const defaultTheme: ThemeConfig = {
   colorPalette: {
-    primary: "#3161D1",
-    secondary: "#5774A8",
-    accent: "#10B981",
+    primary: "#8B9FE6", // Soft lavender blue
+    secondary: "#A4B5D1",
+    accent: "#7DD3C0", // Soft mint green
     background: "#F5F6FA",
     surface: "#FFFFFF",
     text: "#1F2937",

@@ -12,7 +12,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { getSavedThemeColor } from "../components/SiteThemePanel";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 
 // Mock data for site collections
 const mockSites = [
@@ -22,7 +22,7 @@ const mockSites = [
     department: "HR",
     status: "active",
     recentActivity: "2 hours ago",
-    color: "#FF6B6B",
+    color: "#F8A5A5", // Soft coral pink
     pages: 12,
     members: 8,
     description: "Employee policies, benefits, and HR resources",
@@ -33,7 +33,7 @@ const mockSites = [
     department: "Finance",
     status: "active",
     recentActivity: "1 day ago",
-    color: "#4ECDC4",
+    color: "#7DD3C0", // Soft mint green
     pages: 8,
     members: 5,
     description: "Financial reports, budgets, and expense tracking",
@@ -44,7 +44,7 @@ const mockSites = [
     department: "IT",
     status: "active",
     recentActivity: "3 hours ago",
-    color: "#45B7D1",
+    color: "#92C5F7", // Soft sky blue
     pages: 15,
     members: 12,
     description: "Technical support, system documentation, and tools",
@@ -55,7 +55,7 @@ const mockSites = [
     department: "Dev",
     status: "active",
     recentActivity: "30 minutes ago",
-    color: "#3161D1",
+    color: "#8B9FE6", // Soft lavender blue
     pages: 10,
     members: 6,
     description: "Codebase, project management, and sprint planning",
@@ -66,7 +66,7 @@ const mockSites = [
     department: "Marketing",
     status: "active",
     recentActivity: "5 hours ago",
-    color: "#7BC043",
+    color: "#B8E6B8", // Soft sage green
     pages: 7,
     members: 4,
     description: "Campaigns, brand guidelines, and content assets",
@@ -76,19 +76,17 @@ const mockSites = [
 export default function TenantDashboard() {
   const [siteColors, setSiteColors] = useState<Record<number, string>>({});
 
-  // Load saved theme colors for all sites on mount
+  // Load saved theme colors BEFORE painting to prevent flash
+  useLayoutEffect(() => {
+    const colors: Record<number, string> = {};
+    mockSites.forEach((site) => {
+      colors[site.id] = getSavedThemeColor(site.id.toString(), site.color);
+    });
+    setSiteColors(colors);
+  }, []);
+
+  // Listen for theme updates
   useEffect(() => {
-    const loadColors = () => {
-      const colors: Record<number, string> = {};
-      mockSites.forEach((site) => {
-        colors[site.id] = getSavedThemeColor(site.id.toString(), site.color);
-      });
-      setSiteColors(colors);
-    };
-
-    loadColors();
-
-    // Listen for theme updates
     const handleThemeUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
       const siteId = parseInt(customEvent.detail?.siteId);
@@ -108,9 +106,15 @@ export default function TenantDashboard() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-[#f5f6fa]">
+    <div
+      className="flex h-screen"
+      style={{ backgroundColor: "var(--color-background)" }}
+    >
       {/* Fixed Left Sidebar - 230px width */}
-      <div className="w-[230px] bg-white border-r border-[#eaeaea] flex flex-col">
+      <div
+        className="w-[230px] border-r border-[#eaeaea] flex flex-col"
+        style={{ backgroundColor: "var(--color-surface)" }}
+      >
         {/* Logo Section */}
         <div className="p-6 border-b border-[#eaeaea]">
           <Image
@@ -172,9 +176,17 @@ export default function TenantDashboard() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header Bar */}
-        <header className="bg-white border-b border-[#eaeaea] px-6 py-4 flex items-center justify-between">
+        <header
+          className="border-b border-[#eaeaea] px-6 py-4 flex items-center justify-between"
+          style={{ backgroundColor: "var(--color-surface)" }}
+        >
           <div>
-            <h1 className="text-lg font-semibold text-[#202224]">My Sites</h1>
+            <h1
+              className="text-lg font-semibold"
+              style={{ color: "var(--color-text)" }}
+            >
+              My Sites
+            </h1>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -217,7 +229,10 @@ export default function TenantDashboard() {
               const currentColor = siteColors[site.id] || site.color;
               return (
                 <Link key={site.id} href={`/site/${site.id}`}>
-                  <div className="bg-white rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group">
+                  <div
+                    className="rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                    style={{ backgroundColor: "var(--color-surface)" }}
+                  >
                     {/* Site Image */}
                     <div className="mb-4">
                       <div
@@ -229,12 +244,18 @@ export default function TenantDashboard() {
                     </div>
 
                     {/* Site Name */}
-                    <h3 className="text-lg font-semibold text-[#202224] mb-2">
+                    <h3
+                      className="text-lg font-semibold mb-2"
+                      style={{ color: "var(--color-text)" }}
+                    >
                       {site.name}
                     </h3>
 
                     {/* Site URL */}
-                    <p className="text-sm text-[#5774A8] mb-4">
+                    <p
+                      className="text-sm mb-4"
+                      style={{ color: "var(--color-text-secondary)" }}
+                    >
                       {site.department.toLowerCase()}.company.com
                     </p>
                   </div>
