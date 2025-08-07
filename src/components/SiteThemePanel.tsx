@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Palette,
   X,
@@ -12,7 +12,6 @@ import {
   Code,
   RotateCcw,
   Save,
-  Eye
 } from "lucide-react";
 
 interface ThemeConfig {
@@ -63,119 +62,342 @@ interface ThemeConfig {
 
 const defaultTheme: ThemeConfig = {
   colorPalette: {
-    primary: "#3161D1",
-    secondary: "#5774A8",
-    accent: "#10B981",
+    primary: "#8B9FE6", // Soft lavender blue
+    secondary: "#A4B5D1",
+    accent: "#7DD3C0", // Soft mint green
     background: "#F5F6FA",
     surface: "#FFFFFF",
     text: "#1F2937",
-    textSecondary: "#6B7280"
+    textSecondary: "#6B7280",
   },
   text: {
     fontFamily: "Inter",
     fontSize: "16px",
     lineHeight: "1.5",
-    fontWeight: "400"
+    fontWeight: "400",
   },
   buttons: {
     borderRadius: "6px",
     padding: "8px 16px",
     fontSize: "14px",
-    fontWeight: "500"
+    fontWeight: "500",
   },
   background: {
     mainColor: "#F5F6FA",
     pattern: "none",
-    opacity: "1"
+    opacity: "1",
   },
   header: {
     backgroundColor: "#FFFFFF",
     textColor: "#1F2937",
     height: "64px",
-    borderBottom: "1px solid #E5E7EB"
+    borderBottom: "1px solid #E5E7EB",
   },
   footer: {
     backgroundColor: "#F9FAFB",
     textColor: "#6B7280",
     height: "80px",
-    borderTop: "1px solid #E5E7EB"
+    borderTop: "1px solid #E5E7EB",
   },
   utilities: {
     shadows: "medium",
     borders: "1px",
-    spacing: "normal"
-  }
+    spacing: "normal",
+  },
 };
 
 interface SiteThemePanelProps {
   siteId: string;
-  siteName: string;
   siteTheme: string;
 }
 
-export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThemePanelProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("colorPalette");
-  const [themeConfig, setThemeConfig] = useState<ThemeConfig>(defaultTheme);
-  const [isPreview, setIsPreview] = useState(false);
+const getStorageKey = (siteId: string) => `site-theme-${siteId}`;
 
-  // Initialize theme with site's primary color
-  useEffect(() => {
-    setThemeConfig(prev => ({
-      ...prev,
-      colorPalette: {
-        ...prev.colorPalette,
-        primary: siteTheme
-      }
-    }));
-  }, [siteTheme]);
+const saveSiteTheme = (siteId: string, theme: ThemeConfig) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(getStorageKey(siteId), JSON.stringify(theme));
+  }
+};
 
-  const updateThemeConfig = (section: keyof ThemeConfig, key: string, value: string) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [key]: value
-      }
-    }));
-  };
-
-  const resetToDefault = () => {
-    setThemeConfig({
+const loadSiteTheme = (
+  siteId: string,
+  fallbackPrimaryColor: string
+): ThemeConfig => {
+  // Check if we're in the browser environment
+  if (typeof window === "undefined") {
+    return {
       ...defaultTheme,
       colorPalette: {
         ...defaultTheme.colorPalette,
-        primary: siteTheme
-      }
+        primary: fallbackPrimaryColor,
+      },
+    };
+  }
+
+  try {
+    const stored = localStorage.getItem(getStorageKey(siteId));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        ...defaultTheme,
+        ...parsed,
+        colorPalette: {
+          ...defaultTheme.colorPalette,
+          ...parsed.colorPalette,
+        },
+      };
+    }
+  } catch (error) {
+    console.warn("Failed to load site theme:", error);
+  }
+
+  // Return default theme with site's primary color
+  return {
+    ...defaultTheme,
+    colorPalette: {
+      ...defaultTheme.colorPalette,
+      primary: fallbackPrimaryColor,
+    },
+  };
+};
+
+// Export utility function to get saved theme color for use in other components
+export const getSavedThemeColor = (
+  siteId: string,
+  fallbackColor: string
+): string => {
+  if (typeof window === "undefined") {
+    return fallbackColor;
+  }
+
+  try {
+    const stored = localStorage.getItem(getStorageKey(siteId));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return parsed?.colorPalette?.primary || fallbackColor;
+    }
+  } catch (error) {
+    console.warn("Failed to load site theme color:", error);
+  }
+
+  return fallbackColor;
+};
+
+// Export utility function to get complete saved theme for use in other components
+export const getSavedTheme = (
+  siteId: string,
+  fallbackPrimaryColor: string
+): ThemeConfig => {
+  if (typeof window === "undefined") {
+    return {
+      ...defaultTheme,
+      colorPalette: {
+        ...defaultTheme.colorPalette,
+        primary: fallbackPrimaryColor,
+      },
+    };
+  }
+
+  try {
+    const stored = localStorage.getItem(getStorageKey(siteId));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        ...defaultTheme,
+        ...parsed,
+        colorPalette: {
+          ...defaultTheme.colorPalette,
+          ...parsed.colorPalette,
+        },
+        text: {
+          ...defaultTheme.text,
+          ...parsed.text,
+        },
+      };
+    }
+  } catch (error) {
+    console.warn("Failed to load site theme:", error);
+  }
+
+  return {
+    ...defaultTheme,
+    colorPalette: {
+      ...defaultTheme.colorPalette,
+      primary: fallbackPrimaryColor,
+    },
+  };
+};
+
+export default function SiteThemePanel({
+  siteId,
+  siteTheme,
+}: SiteThemePanelProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("colorPalette");
+  const [themeConfig, setThemeConfig] = useState<ThemeConfig>(() =>
+    loadSiteTheme(siteId, siteTheme)
+  );
+
+  // Load site-specific theme when siteId changes
+  useEffect(() => {
+    const siteThemeConfig = loadSiteTheme(siteId, siteTheme);
+    setThemeConfig(siteThemeConfig);
+  }, [siteId, siteTheme]);
+
+  const updateThemeConfig = (
+    section: keyof ThemeConfig,
+    key: string,
+    value: string
+  ) => {
+    setThemeConfig((prev) => {
+      const newConfig = {
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [key]: value,
+        },
+      };
+      // Apply theme immediately for live preview with the new config
+      setTimeout(() => applyThemeToDocument(newConfig), 0);
+      return newConfig;
     });
   };
 
-  const applyThemeToDocument = () => {
-    const root = document.documentElement;
-
-    // Apply CSS custom properties
-    root.style.setProperty('--color-primary', themeConfig.colorPalette.primary);
-    root.style.setProperty('--color-secondary', themeConfig.colorPalette.secondary);
-    root.style.setProperty('--color-accent', themeConfig.colorPalette.accent);
-    root.style.setProperty('--color-background', themeConfig.colorPalette.background);
-    root.style.setProperty('--color-surface', themeConfig.colorPalette.surface);
-    root.style.setProperty('--color-text', themeConfig.colorPalette.text);
-    root.style.setProperty('--color-text-secondary', themeConfig.colorPalette.textSecondary);
-
-    // Apply other theme properties
-    root.style.setProperty('--font-family', themeConfig.text.fontFamily);
-    root.style.setProperty('--font-size', themeConfig.text.fontSize);
-    root.style.setProperty('--line-height', themeConfig.text.lineHeight);
-    root.style.setProperty('--button-border-radius', themeConfig.buttons.borderRadius);
-    root.style.setProperty('--header-height', themeConfig.header.height);
-    root.style.setProperty('--footer-height', themeConfig.footer.height);
+  const resetToDefault = () => {
+    const resetTheme = {
+      ...defaultTheme,
+      colorPalette: {
+        ...defaultTheme.colorPalette,
+        primary: siteTheme,
+      },
+    };
+    setThemeConfig(resetTheme);
   };
 
+  const saveTheme = () => {
+    saveSiteTheme(siteId, themeConfig);
+    // Trigger custom event to notify other components of theme change
+    window.dispatchEvent(
+      new CustomEvent("themeUpdated", {
+        detail: { siteId, theme: themeConfig },
+      })
+    );
+    // Show save confirmation or feedback here if needed
+    console.log(`Theme saved for site ${siteId}`);
+  };
+
+  const applyThemeToDocument = useCallback(
+    (config = themeConfig) => {
+      // Only apply theme if we're on a site page (not dashboard)
+      const currentPath = window.location.pathname;
+      const isSitePage = currentPath.includes("/site/");
+
+      if (!isSitePage) {
+        return; // Don't apply site theme on dashboard
+      }
+
+      // Remove any existing theme override style for this site
+      const existingStyle = document.getElementById(
+        `site-theme-override-${siteId}`
+      );
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+
+      // Create and inject dynamic CSS scoped to current site
+      const style = document.createElement("style");
+      style.id = `site-theme-override-${siteId}`;
+      style.textContent = `
+      /* Site-specific theme scope - only apply to site pages */
+      body[data-site-id="${siteId}"] {
+        --color-primary: ${config.colorPalette.primary} !important;
+        --color-secondary: ${config.colorPalette.secondary} !important;
+        --color-accent: ${config.colorPalette.accent} !important;
+        --color-background: ${config.colorPalette.background} !important;
+        --color-surface: ${config.colorPalette.surface} !important;
+        --color-text: ${config.colorPalette.text} !important;
+        --color-text-secondary: ${config.colorPalette.textSecondary} !important;
+        --font-family: ${config.text.fontFamily} !important;
+        --font-size: ${config.text.fontSize} !important;
+        --line-height: ${config.text.lineHeight} !important;
+        --button-border-radius: ${config.buttons.borderRadius} !important;
+        --header-height: ${config.header.height} !important;
+        --footer-height: ${config.footer.height} !important;
+        --header-bg-color: ${config.header.backgroundColor} !important;
+        --header-text-color: ${config.header.textColor} !important;
+        --footer-bg-color: ${config.footer.backgroundColor} !important;
+        --footer-text-color: ${config.footer.textColor} !important;
+        --background-main-color: ${config.background.mainColor} !important;
+        
+        /* Apply theme to body and typography */
+        font-family: var(--font-family) !important;
+        font-size: var(--font-size) !important;
+        line-height: var(--line-height) !important;
+        background-color: var(--background-main-color) !important;
+      }
+
+      /* Override inline styles that use the original site color - only for current site */
+      body[data-site-id="${siteId}"] [style*="${siteTheme}"] {
+        background-color: ${config.colorPalette.primary} !important;
+        border-color: ${config.colorPalette.primary} !important;
+        color: ${config.colorPalette.primary} !important;
+      }
+
+      /* Site-specific dynamic styling */
+      body[data-site-id="${siteId}"] .site-theme-dynamic {
+        background-color: var(--color-primary) !important;
+        color: var(--color-primary) !important;
+        border-color: var(--color-primary) !important;
+      }
+
+      /* Theme buttons - only for current site */
+      body[data-site-id="${siteId}"] button {
+        border-radius: var(--button-border-radius) !important;
+      }
+    `;
+
+      document.head.appendChild(style);
+
+      // Add site ID to body for scoping
+      document.body.setAttribute("data-site-id", siteId);
+
+      // Force repaint by slightly changing a harmless style property
+      document.body.style.transform = "translateZ(0)";
+      requestAnimationFrame(() => {
+        document.body.style.transform = "";
+      });
+    },
+    [themeConfig, siteTheme, siteId]
+  );
+
+  // Cleanup function to remove site-specific theme styles
+  const cleanupThemeStyles = useCallback(() => {
+    const existingStyle = document.getElementById(
+      `site-theme-override-${siteId}`
+    );
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    // Remove site ID from body
+    document.body.removeAttribute("data-site-id");
+  }, [siteId]);
+
+  // Apply theme on mount and when config changes (persistent theme)
   useEffect(() => {
-    if (isPreview) {
+    applyThemeToDocument();
+
+    // Cleanup when component unmounts or site changes
+    return () => {
+      cleanupThemeStyles();
+    };
+  }, [themeConfig, applyThemeToDocument, cleanupThemeStyles]);
+
+  // Apply theme immediately when panel is opened for live preview
+  useEffect(() => {
+    if (isOpen) {
       applyThemeToDocument();
     }
-  }, [themeConfig, isPreview]);
+  }, [isOpen, applyThemeToDocument]);
 
   const sections = [
     { id: "colorPalette", label: "Color Palette", icon: Palette },
@@ -184,7 +406,7 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
     { id: "background", label: "Background", icon: Layers },
     { id: "header", label: "Header", icon: Monitor },
     { id: "footer", label: "Footer", icon: Layout },
-    { id: "utilities", label: "Utilities", icon: Code }
+    { id: "utilities", label: "Utilities", icon: Code },
   ];
 
   const renderColorPalette = () => (
@@ -192,19 +414,23 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
       {Object.entries(themeConfig.colorPalette).map(([key, value]) => (
         <div key={key} className="flex items-center justify-between">
           <label className="text-sm font-medium text-gray-700 capitalize">
-            {key.replace(/([A-Z])/g, ' $1').trim()}
+            {key.replace(/([A-Z])/g, " $1").trim()}
           </label>
           <div className="flex items-center space-x-2">
             <input
               type="color"
               value={value}
-              onChange={(e) => updateThemeConfig("colorPalette", key, e.target.value)}
+              onChange={(e) =>
+                updateThemeConfig("colorPalette", key, e.target.value)
+              }
               className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
             />
             <input
               type="text"
               value={value}
-              onChange={(e) => updateThemeConfig("colorPalette", key, e.target.value)}
+              onChange={(e) =>
+                updateThemeConfig("colorPalette", key, e.target.value)
+              }
               className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
             />
           </div>
@@ -216,10 +442,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
   const renderTextSettings = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Font Family</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Font Family
+        </label>
         <select
           value={themeConfig.text.fontFamily}
-          onChange={(e) => updateThemeConfig("text", "fontFamily", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("text", "fontFamily", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="Inter">Inter</option>
@@ -230,10 +460,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Font Size
+        </label>
         <select
           value={themeConfig.text.fontSize}
-          onChange={(e) => updateThemeConfig("text", "fontSize", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("text", "fontSize", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="14px">14px</option>
@@ -243,10 +477,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Line Height</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Line Height
+        </label>
         <select
           value={themeConfig.text.lineHeight}
-          onChange={(e) => updateThemeConfig("text", "lineHeight", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("text", "lineHeight", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="1.3">1.3</option>
@@ -256,10 +494,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Font Weight</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Font Weight
+        </label>
         <select
           value={themeConfig.text.fontWeight}
-          onChange={(e) => updateThemeConfig("text", "fontWeight", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("text", "fontWeight", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="300">Light (300)</option>
@@ -275,10 +517,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
   const renderButtonSettings = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Border Radius</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Border Radius
+        </label>
         <select
           value={themeConfig.buttons.borderRadius}
-          onChange={(e) => updateThemeConfig("buttons", "borderRadius", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("buttons", "borderRadius", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="0px">Sharp (0px)</option>
@@ -290,10 +536,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Padding</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Padding
+        </label>
         <select
           value={themeConfig.buttons.padding}
-          onChange={(e) => updateThemeConfig("buttons", "padding", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("buttons", "padding", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="6px 12px">Small</option>
@@ -308,27 +558,37 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
   const renderBackgroundSettings = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Background Color</label>
+        <label className="text-sm font-medium text-gray-700">
+          Background Color
+        </label>
         <div className="flex items-center space-x-2">
           <input
             type="color"
             value={themeConfig.background.mainColor}
-            onChange={(e) => updateThemeConfig("background", "mainColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("background", "mainColor", e.target.value)
+            }
             className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
           />
           <input
             type="text"
             value={themeConfig.background.mainColor}
-            onChange={(e) => updateThemeConfig("background", "mainColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("background", "mainColor", e.target.value)
+            }
             className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Pattern</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Pattern
+        </label>
         <select
           value={themeConfig.background.pattern}
-          onChange={(e) => updateThemeConfig("background", "pattern", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("background", "pattern", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="none">None</option>
@@ -343,18 +603,24 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
   const renderHeaderSettings = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Background Color</label>
+        <label className="text-sm font-medium text-gray-700">
+          Background Color
+        </label>
         <div className="flex items-center space-x-2">
           <input
             type="color"
             value={themeConfig.header.backgroundColor}
-            onChange={(e) => updateThemeConfig("header", "backgroundColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("header", "backgroundColor", e.target.value)
+            }
             className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
           />
           <input
             type="text"
             value={themeConfig.header.backgroundColor}
-            onChange={(e) => updateThemeConfig("header", "backgroundColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("header", "backgroundColor", e.target.value)
+            }
             className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
           />
         </div>
@@ -365,22 +631,30 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
           <input
             type="color"
             value={themeConfig.header.textColor}
-            onChange={(e) => updateThemeConfig("header", "textColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("header", "textColor", e.target.value)
+            }
             className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
           />
           <input
             type="text"
             value={themeConfig.header.textColor}
-            onChange={(e) => updateThemeConfig("header", "textColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("header", "textColor", e.target.value)
+            }
             className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Height
+        </label>
         <select
           value={themeConfig.header.height}
-          onChange={(e) => updateThemeConfig("header", "height", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("header", "height", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="48px">Compact (48px)</option>
@@ -395,18 +669,24 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
   const renderFooterSettings = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Background Color</label>
+        <label className="text-sm font-medium text-gray-700">
+          Background Color
+        </label>
         <div className="flex items-center space-x-2">
           <input
             type="color"
             value={themeConfig.footer.backgroundColor}
-            onChange={(e) => updateThemeConfig("footer", "backgroundColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("footer", "backgroundColor", e.target.value)
+            }
             className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
           />
           <input
             type="text"
             value={themeConfig.footer.backgroundColor}
-            onChange={(e) => updateThemeConfig("footer", "backgroundColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("footer", "backgroundColor", e.target.value)
+            }
             className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
           />
         </div>
@@ -417,13 +697,17 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
           <input
             type="color"
             value={themeConfig.footer.textColor}
-            onChange={(e) => updateThemeConfig("footer", "textColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("footer", "textColor", e.target.value)
+            }
             className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
           />
           <input
             type="text"
             value={themeConfig.footer.textColor}
-            onChange={(e) => updateThemeConfig("footer", "textColor", e.target.value)}
+            onChange={(e) =>
+              updateThemeConfig("footer", "textColor", e.target.value)
+            }
             className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
           />
         </div>
@@ -434,10 +718,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
   const renderUtilitiesSettings = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Shadow Intensity</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Shadow Intensity
+        </label>
         <select
           value={themeConfig.utilities.shadows}
-          onChange={(e) => updateThemeConfig("utilities", "shadows", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("utilities", "shadows", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="none">None</option>
@@ -447,10 +735,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Border Width</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Border Width
+        </label>
         <select
           value={themeConfig.utilities.borders}
-          onChange={(e) => updateThemeConfig("utilities", "borders", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("utilities", "borders", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="0px">None</option>
@@ -460,10 +752,14 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Spacing</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Spacing
+        </label>
         <select
           value={themeConfig.utilities.spacing}
-          onChange={(e) => updateThemeConfig("utilities", "spacing", e.target.value)}
+          onChange={(e) =>
+            updateThemeConfig("utilities", "spacing", e.target.value)
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="compact">Compact</option>
@@ -476,14 +772,22 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
 
   const renderSectionContent = () => {
     switch (activeSection) {
-      case "colorPalette": return renderColorPalette();
-      case "text": return renderTextSettings();
-      case "buttons": return renderButtonSettings();
-      case "background": return renderBackgroundSettings();
-      case "header": return renderHeaderSettings();
-      case "footer": return renderFooterSettings();
-      case "utilities": return renderUtilitiesSettings();
-      default: return renderColorPalette();
+      case "colorPalette":
+        return renderColorPalette();
+      case "text":
+        return renderTextSettings();
+      case "buttons":
+        return renderButtonSettings();
+      case "background":
+        return renderBackgroundSettings();
+      case "header":
+        return renderHeaderSettings();
+      case "footer":
+        return renderFooterSettings();
+      case "utilities":
+        return renderUtilitiesSettings();
+      default:
+        return renderColorPalette();
     }
   };
 
@@ -493,7 +797,7 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-40 flex items-center justify-center"
-        style={{ backgroundColor: siteTheme }}
+        style={{ backgroundColor: themeConfig.colorPalette.primary }}
         title="Site Theme"
       >
         <Palette className="w-6 h-6 text-white" />
@@ -501,72 +805,49 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
 
       {/* Theme Panel */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsOpen(false)} />
+        <>
+          {/* Close overlay - positioned to not cover the main content */}
+          <div
+            className="fixed inset-0 z-40 bg-transparent"
+            onClick={() => setIsOpen(false)}
+          />
 
-          <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl flex flex-col">
+          {/* Theme Panel */}
+          <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out z-50">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Site Theme</h2>
-                  <p className="text-sm text-gray-600">{siteName}</p>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Site Theme
+                  </h2>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
+                  className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-2 mt-4">
-                <button
-                  onClick={() => setIsPreview(!isPreview)}
-                  className={`px-3 py-2 text-xs font-medium rounded-md ${
-                    isPreview
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'bg-gray-100 text-gray-700 border border-gray-200'
-                  }`}
-                >
-                  <Eye className="w-3 h-3 mr-1 inline" />
-                  {isPreview ? 'Previewing' : 'Preview'}
-                </button>
-                <button
-                  onClick={resetToDefault}
-                  className="px-3 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded-md hover:bg-gray-200"
-                >
-                  <RotateCcw className="w-3 h-3 mr-1 inline" />
-                  Reset
-                </button>
-                <button
-                  className="px-3 py-2 text-xs font-medium text-white rounded-md"
-                  style={{ backgroundColor: siteTheme }}
-                >
-                  <Save className="w-3 h-3 mr-1 inline" />
-                  Save
+                  <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
             </div>
 
             {/* Section Navigation */}
-            <div className="border-b border-gray-200">
-              <nav className="px-4 py-2">
-                <div className="grid grid-cols-2 gap-1">
+            <div className="border-b border-gray-100">
+              <nav className="px-6 py-0">
+                <div className="space-y-1">
                   {sections.map((section) => {
                     const Icon = section.icon;
                     return (
                       <button
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
-                        className={`flex items-center px-3 py-2 text-xs font-medium rounded-md ${
+                        className={`w-full flex items-center px-3 py-3 text-sm font-medium transition-colors ${
                           activeSection === section.id
-                            ? 'text-blue-700 bg-blue-100'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            ? "text-blue-600 bg-blue-50"
+                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                       >
-                        <Icon className="w-3 h-3 mr-2" />
+                        <Icon className="w-4 h-4 mr-3" />
                         {section.label}
                       </button>
                     );
@@ -576,11 +857,32 @@ export default function SiteThemePanel({ siteId, siteName, siteTheme }: SiteThem
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-6">
               {renderSectionContent()}
             </div>
+
+            {/* Action Buttons */}
+            <div className="border-t border-gray-100 p-6">
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={resetToDefault}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2 inline" />
+                  Reset
+                </button>
+                <button
+                  onClick={saveTheme}
+                  className="px-4 py-2 text-sm font-medium text-white rounded-md transition-colors"
+                  style={{ backgroundColor: themeConfig.colorPalette.primary }}
+                >
+                  <Save className="w-4 h-4 mr-2 inline" />
+                  Save
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );

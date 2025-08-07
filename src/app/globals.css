@@ -3,6 +3,26 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Site theme custom properties */
+  --color-primary: #8b9fe6; /* Soft lavender blue */
+  --color-secondary: #a4b5d1;
+  --color-accent: #7dd3c0; /* Soft mint green */
+  --color-background: #f5f6fa;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
+  --font-family: "Inter", sans-serif;
+  --font-size: 16px;
+  --line-height: 1.5;
+  --button-border-radius: 6px;
+  --header-height: 64px;
+  --footer-height: 80px;
+  --header-bg-color: #ffffff;
+  --header-text-color: #1f2937;
+  --footer-bg-color: #f9fafb;
+  --footer-text-color: #6b7280;
+  --background-main-color: #f5f6fa;
 }
 
 @theme inline {

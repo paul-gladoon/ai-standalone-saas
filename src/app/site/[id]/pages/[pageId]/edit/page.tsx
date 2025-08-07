@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -13,19 +13,11 @@ import {
   ArrowLeft,
   Save,
   Eye,
-  RotateCcw,
   Bold,
   Italic,
-  Underline,
   List,
   ListOrdered,
-  Quote,
-  Code,
   Link as LinkIcon,
-  ImagePlus,
-  AlignLeft,
-  AlignCenter,
-  AlignRight
 } from "lucide-react";
 
 // Mock page data
@@ -56,23 +48,22 @@ const mockPage = {
 <p>For any questions, please don't hesitate to reach out to our HR team.</p>`,
   createdDate: "2024-01-15",
   modifiedDate: "2024-01-20",
-  author: "John Doe"
+  author: "John Doe",
 };
 
 // Mock sites data
 const mockSites = {
-  "hr": { name: "HR Department", theme: "#10B981", color: "emerald" },
-  "finance": { name: "Finance Department", theme: "#3B82F6", color: "blue" },
-  "it": { name: "IT Department", theme: "#8B5CF6", color: "purple" },
-  "dev": { name: "Development Team", theme: "#F59E0B", color: "amber" },
-  "marketing": { name: "Marketing Department", theme: "#EF4444", color: "red" }
+  hr: { name: "HR Department", theme: "#10B981", color: "emerald" },
+  finance: { name: "Finance Department", theme: "#3B82F6", color: "blue" },
+  it: { name: "IT Department", theme: "#8B5CF6", color: "purple" },
+  dev: { name: "Development Team", theme: "#F59E0B", color: "amber" },
+  marketing: { name: "Marketing Department", theme: "#EF4444", color: "red" },
 };
 
 export default function PageEditor() {
   const params = useParams();
-  const router = useRouter();
   const siteId = params.id as string;
-  const pageId = params.pageId as string;
+  // const pageId = params.pageId as string; // Will be used to fetch specific page data
   const site = mockSites[siteId as keyof typeof mockSites] || mockSites.hr;
   const page = mockPage; // In real app, fetch by pageId
 
@@ -100,39 +91,65 @@ export default function PageEditor() {
   };
 
   const insertFormatting = (tag: string) => {
-    const textarea = document.getElementById('content-editor') as HTMLTextAreaElement;
+    const textarea = document.getElementById(
+      "content-editor"
+    ) as HTMLTextAreaElement;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = content.substring(start, end);
 
-    let newContent = '';
+    let newContent = "";
 
     switch (tag) {
-      case 'bold':
-        newContent = content.substring(0, start) + `<strong>${selectedText}</strong>` + content.substring(end);
+      case "bold":
+        newContent =
+          content.substring(0, start) +
+          `<strong>${selectedText}</strong>` +
+          content.substring(end);
         break;
-      case 'italic':
-        newContent = content.substring(0, start) + `<em>${selectedText}</em>` + content.substring(end);
+      case "italic":
+        newContent =
+          content.substring(0, start) +
+          `<em>${selectedText}</em>` +
+          content.substring(end);
         break;
-      case 'h1':
-        newContent = content.substring(0, start) + `<h1>${selectedText || 'Heading 1'}</h1>` + content.substring(end);
+      case "h1":
+        newContent =
+          content.substring(0, start) +
+          `<h1>${selectedText || "Heading 1"}</h1>` +
+          content.substring(end);
         break;
-      case 'h2':
-        newContent = content.substring(0, start) + `<h2>${selectedText || 'Heading 2'}</h2>` + content.substring(end);
+      case "h2":
+        newContent =
+          content.substring(0, start) +
+          `<h2>${selectedText || "Heading 2"}</h2>` +
+          content.substring(end);
         break;
-      case 'ul':
-        newContent = content.substring(0, start) + `<ul>\n<li>${selectedText || 'List item'}</li>\n</ul>` + content.substring(end);
+      case "ul":
+        newContent =
+          content.substring(0, start) +
+          `<ul>\n<li>${selectedText || "List item"}</li>\n</ul>` +
+          content.substring(end);
         break;
-      case 'ol':
-        newContent = content.substring(0, start) + `<ol>\n<li>${selectedText || 'List item'}</li>\n</ol>` + content.substring(end);
+      case "ol":
+        newContent =
+          content.substring(0, start) +
+          `<ol>\n<li>${selectedText || "List item"}</li>\n</ol>` +
+          content.substring(end);
         break;
-      case 'link':
-        newContent = content.substring(0, start) + `<a href="https://example.com">${selectedText || 'Link text'}</a>` + content.substring(end);
+      case "link":
+        newContent =
+          content.substring(0, start) +
+          `<a href="https://example.com">${selectedText || "Link text"}</a>` +
+          content.substring(end);
         break;
-      case 'p':
-        newContent = content.substring(0, start) + `<p>${selectedText || 'Paragraph text'}</p>` + content.substring(end);
+      case "p":
+        newContent =
+          content.substring(0, start) +
+          `<p>${selectedText || "Paragraph text"}</p>` +
+          content.substring(end);
         break;
       default:
         return;
@@ -222,11 +239,20 @@ export default function PageEditor() {
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link href="/" className="hover:text-[#3161D1]">Dashboard</Link>
+              <Link href="/" className="hover:text-[#3161D1]">
+                Dashboard
+              </Link>
               <span>›</span>
-              <Link href={`/site/${siteId}`} className="hover:text-[#3161D1]">{site.name}</Link>
+              <Link href={`/site/${siteId}`} className="hover:text-[#3161D1]">
+                {site.name}
+              </Link>
               <span>›</span>
-              <Link href={`/site/${siteId}/pages`} className="hover:text-[#3161D1]">Pages</Link>
+              <Link
+                href={`/site/${siteId}/pages`}
+                className="hover:text-[#3161D1]"
+              >
+                Pages
+              </Link>
               <span>›</span>
               <span className="font-medium text-gray-900">Edit Page</span>
             </div>
@@ -263,7 +289,9 @@ export default function PageEditor() {
           <div className="max-w-4xl mx-auto">
             {/* Page Settings */}
             <div className="bg-white rounded-lg shadow mb-6 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Page Settings</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Page Settings
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -318,19 +346,21 @@ export default function PageEditor() {
             {/* Content Editor */}
             <div className="bg-white rounded-lg shadow">
               <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Page Content</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Page Content
+                </h2>
 
                 {!isPreview && (
                   <div className="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-md">
                     <button
-                      onClick={() => insertFormatting('bold')}
+                      onClick={() => insertFormatting("bold")}
                       className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Bold"
                     >
                       <Bold className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => insertFormatting('italic')}
+                      onClick={() => insertFormatting("italic")}
                       className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Italic"
                     >
@@ -338,21 +368,21 @@ export default function PageEditor() {
                     </button>
                     <div className="w-px h-6 bg-gray-300 mx-1"></div>
                     <button
-                      onClick={() => insertFormatting('h1')}
+                      onClick={() => insertFormatting("h1")}
                       className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Heading 1"
                     >
                       H1
                     </button>
                     <button
-                      onClick={() => insertFormatting('h2')}
+                      onClick={() => insertFormatting("h2")}
                       className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Heading 2"
                     >
                       H2
                     </button>
                     <button
-                      onClick={() => insertFormatting('p')}
+                      onClick={() => insertFormatting("p")}
                       className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Paragraph"
                     >
@@ -360,21 +390,21 @@ export default function PageEditor() {
                     </button>
                     <div className="w-px h-6 bg-gray-300 mx-1"></div>
                     <button
-                      onClick={() => insertFormatting('ul')}
+                      onClick={() => insertFormatting("ul")}
                       className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Bullet List"
                     >
                       <List className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => insertFormatting('ol')}
+                      onClick={() => insertFormatting("ol")}
                       className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Numbered List"
                     >
                       <ListOrdered className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => insertFormatting('link')}
+                      onClick={() => insertFormatting("link")}
                       className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded border border-transparent hover:border-gray-300"
                       title="Insert Link"
                     >
@@ -406,7 +436,7 @@ export default function PageEditor() {
             {isDirty && (
               <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm text-yellow-700">
-                  You have unsaved changes. Don't forget to save your work!
+                  You have unsaved changes. Don&apos;t forget to save your work!
                 </p>
               </div>
             )}
