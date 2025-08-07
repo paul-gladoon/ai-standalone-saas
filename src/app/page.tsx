@@ -2,6 +2,7 @@
 
 import { Building2, Settings, FileText, HelpCircle, Plus, Search, ChevronDown } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 // Mock data for site collections
 const mockSites = [
@@ -168,26 +169,25 @@ export default function TenantDashboard() {
           {/* Site Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mockSites.map((site) => (
-              <div
-                key={site.id}
-                className="bg-white rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group"
-              >
-                {/* Site Image */}
-                <div className="mb-4">
-                  <div
-                    className="w-full h-32 rounded-lg flex items-center justify-center text-white font-semibold text-lg"
-                    style={{ backgroundColor: site.color }}
-                  >
-                    {site.department}
+              <Link key={site.id} href={`/site/${site.id}`}>
+                <div className="bg-white rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group">
+                  {/* Site Image */}
+                  <div className="mb-4">
+                    <div
+                      className="w-full h-32 rounded-lg flex items-center justify-center text-white font-semibold text-lg"
+                      style={{ backgroundColor: site.color }}
+                    >
+                      {site.department}
+                    </div>
                   </div>
+
+                  {/* Site Name */}
+                  <h3 className="text-lg font-semibold text-[#202224] mb-2">{site.name}</h3>
+
+                  {/* Site URL */}
+                  <p className="text-sm text-[#5774A8] mb-4">{site.department.toLowerCase()}.company.com</p>
                 </div>
-
-                {/* Site Name */}
-                <h3 className="text-lg font-semibold text-[#202224] mb-2">{site.name}</h3>
-
-                {/* Site URL */}
-                <p className="text-sm text-[#5774A8] mb-4">{site.department.toLowerCase()}.company.com</p>
-              </div>
+              </Link>
             ))}
           </div>
         </main>
