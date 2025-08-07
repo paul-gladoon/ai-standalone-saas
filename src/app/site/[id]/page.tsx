@@ -17,6 +17,7 @@ import {
 import Image from "next/image";
 import SiteThemePanel, {
   getSavedThemeColor,
+  getSavedTheme,
 } from "../../../components/SiteThemePanel";
 import { useEffect, useState } from "react";
 
@@ -85,12 +86,15 @@ export default function SitePage() {
   const [currentSiteColor, setCurrentSiteColor] = useState(
     site?.color || "#3161D1"
   );
+  const [currentSiteTheme, setCurrentSiteTheme] = useState<any>(null);
 
-  // Load saved theme color for this site
+  // Load saved theme color and complete theme for this site
   useEffect(() => {
     if (site) {
       const savedColor = getSavedThemeColor(siteId.toString(), site.color);
+      const savedTheme = getSavedTheme(siteId.toString(), site.color);
       setCurrentSiteColor(savedColor);
+      setCurrentSiteTheme(savedTheme);
     }
   }, [siteId, site]);
 
@@ -99,7 +103,9 @@ export default function SitePage() {
     const handleStorageChange = () => {
       if (site) {
         const savedColor = getSavedThemeColor(siteId.toString(), site.color);
+        const savedTheme = getSavedTheme(siteId.toString(), site.color);
         setCurrentSiteColor(savedColor);
+        setCurrentSiteTheme(savedTheme);
       }
     };
 
@@ -107,6 +113,7 @@ export default function SitePage() {
       const customEvent = event as CustomEvent;
       if (site && customEvent.detail?.siteId === siteId.toString()) {
         setCurrentSiteColor(customEvent.detail.theme.colorPalette.primary);
+        setCurrentSiteTheme(customEvent.detail.theme);
       }
     };
 
@@ -243,12 +250,13 @@ export default function SitePage() {
         >
           <div className="flex items-center space-x-2">
             {/* Breadcrumb Navigation */}
-            <span
-              className="text-sm"
+            <Link
+              href="/"
+              className="text-sm hover:opacity-80 transition-opacity"
               style={{ color: "var(--color-text-secondary)" }}
             >
               Dashboard
-            </span>
+            </Link>
             <ChevronRight className="w-4 h-4 text-[#ADB5BD]" />
             <span
               className="text-sm font-medium"

@@ -183,6 +183,51 @@ export const getSavedThemeColor = (
   return fallbackColor;
 };
 
+// Export utility function to get complete saved theme for use in other components
+export const getSavedTheme = (
+  siteId: string,
+  fallbackPrimaryColor: string
+): ThemeConfig => {
+  if (typeof window === "undefined") {
+    return {
+      ...defaultTheme,
+      colorPalette: {
+        ...defaultTheme.colorPalette,
+        primary: fallbackPrimaryColor,
+      },
+    };
+  }
+
+  try {
+    const stored = localStorage.getItem(getStorageKey(siteId));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        ...defaultTheme,
+        ...parsed,
+        colorPalette: {
+          ...defaultTheme.colorPalette,
+          ...parsed.colorPalette,
+        },
+        text: {
+          ...defaultTheme.text,
+          ...parsed.text,
+        },
+      };
+    }
+  } catch (error) {
+    console.warn("Failed to load site theme:", error);
+  }
+
+  return {
+    ...defaultTheme,
+    colorPalette: {
+      ...defaultTheme.colorPalette,
+      primary: fallbackPrimaryColor,
+    },
+  };
+};
+
 export default function SiteThemePanel({
   siteId,
   siteTheme,

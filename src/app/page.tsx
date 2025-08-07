@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { getSavedThemeColor } from "../components/SiteThemePanel";
+import {
+  getSavedThemeColor,
+  getSavedTheme,
+} from "../components/SiteThemePanel";
 import { useEffect, useState, useLayoutEffect } from "react";
 
 // Mock data for site collections
@@ -75,14 +78,18 @@ const mockSites = [
 
 export default function TenantDashboard() {
   const [siteColors, setSiteColors] = useState<Record<number, string>>({});
+  const [siteThemes, setSiteThemes] = useState<Record<number, any>>({});
 
-  // Load saved theme colors BEFORE painting to prevent flash
+  // Load saved theme colors and complete themes BEFORE painting to prevent flash
   useLayoutEffect(() => {
     const colors: Record<number, string> = {};
+    const themes: Record<number, any> = {};
     mockSites.forEach((site) => {
       colors[site.id] = getSavedThemeColor(site.id.toString(), site.color);
+      themes[site.id] = getSavedTheme(site.id.toString(), site.color);
     });
     setSiteColors(colors);
+    setSiteThemes(themes);
   }, []);
 
   // Listen for theme updates
@@ -90,10 +97,14 @@ export default function TenantDashboard() {
     const handleThemeUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
       const siteId = parseInt(customEvent.detail?.siteId);
-      if (siteId && customEvent.detail?.theme?.colorPalette?.primary) {
+      if (siteId && customEvent.detail?.theme) {
         setSiteColors((prev) => ({
           ...prev,
           [siteId]: customEvent.detail.theme.colorPalette.primary,
+        }));
+        setSiteThemes((prev) => ({
+          ...prev,
+          [siteId]: customEvent.detail.theme,
         }));
       }
     };
@@ -213,26 +224,52 @@ export default function TenantDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mockSites.map((site) => {
               const currentColor = siteColors[site.id] || site.color;
+              const currentTheme = siteThemes[site.id];
               return (
                 <Link key={site.id} href={`/site/${site.id}`}>
-                  <div className="bg-white rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group">
+                  <div
+                    className="rounded-lg border border-[#eaeaea] p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                    style={{
+                      backgroundColor:
+                        currentTheme?.colorPalette?.surface || "#ffffff",
+                      fontFamily: currentTheme?.text?.fontFamily || "Inter",
+                    }}
+                  >
                     {/* Site Image */}
                     <div className="mb-4">
                       <div
-                        className="w-full h-32 rounded-lg flex items-center justify-center text-white font-semibold text-lg"
-                        style={{ backgroundColor: currentColor }}
+                        className="w-full h-32 rounded-lg flex items-center justify-center text-white font-semibold"
+                        style={{
+                          backgroundColor: currentColor,
+                          fontSize: currentTheme?.text?.fontSize || "18px",
+                          fontFamily: currentTheme?.text?.fontFamily || "Inter",
+                        }}
                       >
                         {site.department}
                       </div>
                     </div>
 
                     {/* Site Name */}
-                    <h3 className="text-lg font-semibold text-[#202224] mb-2">
+                    <h3
+                      className="text-lg font-semibold mb-2"
+                      style={{
+                        color: currentTheme?.colorPalette?.text || "#202224",
+                        fontFamily: currentTheme?.text?.fontFamily || "Inter",
+                      }}
+                    >
                       {site.name}
                     </h3>
 
                     {/* Site URL */}
-                    <p className="text-sm text-[#5774A8] mb-4">
+                    <p
+                      className="text-sm mb-4"
+                      style={{
+                        color:
+                          currentTheme?.colorPalette?.textSecondary ||
+                          "#5774A8",
+                        fontFamily: currentTheme?.text?.fontFamily || "Inter",
+                      }}
+                    >
                       {site.department.toLowerCase()}.company.com
                     </p>
                   </div>
