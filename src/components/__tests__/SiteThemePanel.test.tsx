@@ -142,9 +142,9 @@ describe('SiteThemePanel', () => {
 
       // Check color inputs
       expect(screen.getByDisplayValue('#3161D1')).toBeInTheDocument() // Primary color
-      expect(screen.getByText('Secondary')).toBeInTheDocument()
-      expect(screen.getByText('Accent')).toBeInTheDocument()
-      expect(screen.getByText('Background')).toBeInTheDocument()
+      expect(screen.getByText('secondary')).toBeInTheDocument() // Note: lowercase in actual component
+      expect(screen.getByText('accent')).toBeInTheDocument()
+      expect(screen.getByText('background')).toBeInTheDocument()
     })
 
     it('should update color values when changed', async () => {
