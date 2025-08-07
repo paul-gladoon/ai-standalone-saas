@@ -1,0 +1,113 @@
+---
+description: Apply this rule when working with database operations, creating database queries, setting up database connections, or integrating authentication with database operations
+globs: convex/**/* src/**/*
+---
+# Database Integration Rules
+
+## Core Principles
+- Use Convex as the ONLY database platform
+- NO direct database connections or alternative clients (e.g., Prisma, Supabase client, raw SQL)
+- All database operations MUST go through Convex queries and mutations
+- Keep database logic in dedicated Convex functions under `convex/`
+- Use internal Convex document IDs (`_id`) for referencing documents
+- Use `clerkId` for authentication but `_id` for internal references
+
+## Database Access Pattern
+```typescript
+// ✅ CORRECT: Using Convex mutations/queries
+import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation } from "convex/react";
+
+function UserPosts({ userId }: { userId: Id<"users"> }) {
+  const posts = useQuery(api.posts.getPostsByAuthor, { authorId: userId });
+  const createPost = useMutation(api.posts.createPost);
+  
+  return posts?.map(post => <div key={post._id}>{post.title}</div>);
+}
+
+// ❌ INCORRECT: Direct database connection
+import { prisma } from '@/lib/prisma'
+const { data } = await supabase.from('posts').select()
+```
+
+## Convex Function Structure
+```typescript
+// convex/posts.ts
+import { mutation, query } from "./_generated/server";
+import { v } from "convex/values";
+
+export const createPost = mutation({
+  args: {
+    title: v.string(),
+    content: v.string(),
+    authorId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const postId = await ctx.db.insert("posts", {
+      ...args,
+      status: "draft",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    return await ctx.db.get(postId);
+  },
+});
+```
+
+## Best Practices
+1. Always use Convex's type-safe queries and mutations
+2. Implement database operations in dedicated Convex functions under `convex/`
+3. Use Convex indexes for efficient querying
+4. Leverage Convex real-time subscriptions for live data
+5. Keep schema definition in `convex/schema.ts` as source of truth
+6. Use Convex transactions for atomic operations
+
+## Error Handling
+```typescript
+// Recommended error handling pattern in Convex functions
+export const updatePost = mutation({
+  args: { postId: v.id("posts"), title: v.string() },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+    
+    await ctx.db.patch(args.postId, {
+      title: args.title,
+      updatedAt: Date.now(),
+    });
+    
+    return await ctx.db.get(args.postId);
+  },
+});
+```
+  throw error
+}
+```
+
+## Service Layer Structure
+```
+src/
+└── services/
+    ├── user.service.ts
+    ├── post.service.ts
+    └── comment.service.ts
+```
+
+## Authentication Integration
+- Use Clerk for auth, but store user data in database through Prisma
+- Sync Clerk webhook events with database using Prisma operations
+- Never bypass Prisma for user data management
+
+## Performance Considerations
+- Use Prisma's include/select for efficient queries
+- Implement proper pagination using Prisma's skip/take
+- Cache frequently accessed data at application level
+- Use Prisma's findUnique for single record lookups
+
+## Security Guidelines
+- Never expose Prisma client on client-side
+- Use server components or API routes for database operations
+- Implement proper data validation before Prisma operations
+- Use Prisma's middleware for audit logging if needed

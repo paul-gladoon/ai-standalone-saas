@@ -1,0 +1,60 @@
+---
+description: When setting up clerk auth or refactoring it with Convex integration
+globs: src/**/* convex/**/*
+---
+# Clerk Auth Setup and Refactoring with Convex
+
+When setting up or refactoring Clerk authentication:
+
+- `authMiddleware` is deprecated, use `clerkMiddleware` instead
+- Make sure to protect `/app` routes as a starting point in the middlewares
+- Always use the updated import syntax
+- Integrate with Convex for user management through webhooks
+- Use `clerkId` for authentication but Convex `_id` for internal references
+
+## Example Migration:
+
+```typescript
+// ❌ Deprecated
+import { authMiddleware } from "@clerk/nextjs";
+
+// ✅ Correct
+import { clerkMiddleware } from "@clerk/nextjs";
+```
+
+## Convex Integration Pattern:
+
+```typescript
+// convex/users.ts - Handle Clerk webhooks
+export const createUser = mutation({
+  args: {
+    clerkId: v.string(),
+    email: v.string(),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Check if user already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .unique();
+
+    if (existingUser) return existingUser;
+
+    // Create new user
+    return await ctx.db.insert("users", {
+      ...args,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+```
+
+## Authentication Flow:
+1. Clerk handles authentication UI and sessions
+2. Webhooks sync user data to Convex
+3. Use `clerkId` to identify users in Convex queries
+4. Store user references using Convex document IDs internally

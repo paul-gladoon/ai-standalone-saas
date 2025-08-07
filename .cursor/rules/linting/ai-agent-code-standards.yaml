@@ -1,0 +1,657 @@
+# ShortPoint Code Standards & Linting Rules for AI Agents
+# Version: 1.0.0
+# Date: July 31, 2025
+#
+# This file contains comprehensive code standards and linting rules extracted from
+# the ShortPoint apps-monorepo that can be applied by AI agents to other projects.
+
+metadata:
+  version: '1.0.0'
+  description: 'Comprehensive code standards and linting rules for AI agents'
+  author: 'ShortPoint'
+  license: 'UNLICENSED'
+  monorepo_source: 'apps-monorepo'
+
+# =============================================================================
+# PROJECT STRUCTURE STANDARDS
+# =============================================================================
+project_structure:
+  monorepo_type: 'nx_workspace'
+  workspace_folders:
+    - 'app1/**'
+    - 'app1/**/**'
+    - 'app2/**'
+    - 'app2/**/**'
+
+  required_root_files:
+    - 'package.json'
+    - 'nx.json'
+    - 'tsconfig.base.json'
+    - '.eslintrc.js'
+    - '.prettierrc'
+    - 'jest.config.ts'
+    - 'knip.json'
+    - 'commitlint.config.js'
+    - 'lint-staged.config.js'
+    - '.husky/pre-commit'
+    - '.husky/commit-msg'
+    - 'sonar-project.properties'
+    - '.hadolint.yaml'
+    - '.stylelintrc'
+    - 'README.md'
+    - 'CHANGELOG.md'
+    - 'SECURITY.md'
+
+# =============================================================================
+# PACKAGE MANAGER STANDARDS
+# =============================================================================
+package_manager:
+  required: 'yarn'
+  version: '>=1.22.0'
+  commands:
+    install: 'yarn install'
+    add: 'yarn add'
+    addDev: 'yarn add -D'
+    remove: 'yarn remove'
+    run: 'yarn'
+    build: 'yarn build'
+    test: 'yarn test'
+    workspaces: 'yarn workspaces'
+  build_instructions: 'Always use yarn commands for dependency management and build processes'
+  forbidden:
+    - 'npm'
+    - 'npx'
+    - 'pnpm'
+
+# =============================================================================
+# PACKAGE.JSON STANDARDS
+# =============================================================================
+package_json_standards:
+  required_for_all_apps: true
+  including_testing_apps: true
+  mandatory_for_every_app: 'Every app in the workspace must have its own package.json file, including e2e testing apps'
+
+  naming_convention:
+    format: '@{{rootFolder}}/{{project-path}}'
+    example: '@app1/design-system-ui'
+    rules:
+      - 'Use lowercase and dash-separated names'
+      - 'Match the directory structure'
+      - 'Remove root folder from path calculation'
+
+  required_fields:
+    name:
+      format: '@{{scope}}/{{project-name}}'
+    description:
+      min_length: 30
+      required: true
+    version:
+      format: 'semver'
+      pattern: "^\\d+\\.\\d+\\.\\d+$"
+    author: 'ShortPoint'
+    license: 'UNLICENSED'
+
+  required_scripts:
+    all_projects:
+      - 'lint: eslint . --max-warnings 0 --cache'
+      - 'typecheck: tsc --noEmit -p tsconfig.json'
+      - 'start: [project-specific]'
+      - 'serve: [project-specific]'
+      - 'build: [project-specific]'
+      - 'unit-tests: [project-specific]'
+      - 'storybook-tests: [project-specific]'
+      - 'e2e-tests: [project-specific]'
+
+    conditional_scripts:
+      'lint:css':
+        condition: 'has *.styles.* files'
+        value: "stylelint '**/*.(module|styles).*'"
+
+    parent_projects:
+      pattern: '{{script}}-all: nx run-many -t {{script}} -p {{projectName}}-*'
+      exclude_individual_scripts: true
+
+  nx_configuration:
+    required:
+      tags:
+        - format: 'scope:{{projectName}}'
+        - min_count: 1
+
+# =============================================================================
+# TYPESCRIPT CONFIGURATION STANDARDS
+# =============================================================================
+typescript_standards:
+  tsconfig_json:
+    max_lines: 15
+    required_fields:
+      extends: 'pattern ending with tsconfig.base.json'
+
+  tsconfig_base_json:
+    compiler_options:
+      allowJs: false
+      allowSyntheticDefaultImports: true
+      emitDecoratorMetadata: true
+      esModuleInterop: false
+      experimentalDecorators: true
+      forceConsistentCasingInFileNames: true
+      ignoreDeprecations: '5.0'
+      importHelpers: true
+      isolatedModules: true
+      jsx: 'react-jsx'
+      lib: ['DOM', 'DOM.Iterable', 'ESNext', 'ES2015', 'es6']
+      module: 'ESNext'
+      moduleResolution: 'node'
+      noImplicitAny: true
+      noImplicitThis: true
+      resolveJsonModule: true
+      removeComments: true
+      strict: true
+      skipLibCheck: true
+      strictNullChecks: true
+      strictPropertyInitialization: false
+      suppressImplicitAnyIndexErrors: true
+      target: 'ESNext'
+      types: ['node', 'vite/client', 'jest']
+      useDefineForClassFields: true
+    exclude:
+      - '**/node_modules'
+      - '**/vite.config.ts'
+
+  tsconfig_build_json:
+    max_lines: 15
+    required_structure:
+      extends: './tsconfig.json'
+      exclude: ['test', '**/*spec.ts', 'jest.*']
+
+# =============================================================================
+# ESLINT CONFIGURATION STANDARDS
+# =============================================================================
+eslint_standards:
+  root_eslint_config:
+    root: true
+    extends:
+      - 'eslint:recommended'
+      - 'plugin:@nx/typescript'
+      - 'plugin:sonarjs/recommended-legacy'
+      - 'plugin:prettier/recommended'
+
+    plugins:
+      - '@nx'
+      - 'sonarjs'
+
+    parser_options:
+      project: './tsconfig.base.json'
+      extraFileExtensions: ['.json']
+
+    ignore_patterns:
+      - 'vite.config.ts'
+      - 'vite-env.d.ts'
+      - '.eslintrc.js'
+      - 'node_modules/'
+      - 'dist/'
+      - 'coverage/'
+      - 'storybook-static/'
+      - 'lint-staged.config.js'
+      - 'nest-cli.json'
+      - 'tsconfig.json'
+      - 'tsconfig.base.json'
+      - 'commitlint.config.js'
+      - '*.min.js'
+      - 'src/db/client.ts'
+
+  typescript_overrides:
+    files: ['*.ts', '*.tsx']
+    extends:
+      - 'plugin:@nx/typescript'
+      - 'eslint:recommended'
+      - 'plugin:react/recommended'
+      - 'plugin:react/jsx-runtime'
+      - 'plugin:react-hooks/recommended'
+      - 'plugin:sonarjs/recommended-legacy'
+      - 'airbnb-base'
+      - 'airbnb-typescript/base'
+      - 'plugin:prettier/recommended'
+
+    key_rules:
+      'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }]
+      'operator-linebreak': 'off'
+      'import/extensions':
+        - 'warn'
+        - 'never'
+        - module: 'ignorePackages'
+          service: 'ignorePackages'
+          controller: 'ignorePackages'
+          dto: 'ignorePackages'
+          entity: 'ignorePackages'
+          resolver: 'ignorePackages'
+          spec: 'ignorePackages'
+          json: 'always'
+
+  package_json_overrides:
+    files: ['package.json']
+    parser_options:
+      project: null
+    plugins: ['package-json-dependencies']
+    rules:
+      '@typescript-eslint/no-unused-expressions': 'off'
+      '@typescript-eslint/no-unused-vars': 'off'
+      '@typescript-eslint/no-var-requires': 'off'
+      'sonarjs/no-duplicate-string': 'off'
+      'quotes': ['warn', 'double']
+      'object-curly-spacing': ['warn', 'always']
+      'indent': ['warn', 2]
+      'package-json-dependencies/caret-or-tilde':
+        - 'warn'
+        - ignorePackages: ['@playwright/test']
+
+  storybook_overrides:
+    files:
+      - '*.spec.ts'
+      - '*.spec.tsx'
+      - '*.spec.js'
+      - '*.spec.jsx'
+      - '**/test/**/*'
+      - '**/*.stories.tsx'
+      - '**/*.stories.ts'
+      - '**/*.stories.js'
+      - '**/*.stories.broken.tsx'
+    extends: ['plugin:storybook/recommended']
+    rules:
+      'import/no-extraneous-dependencies':
+        - 'warn'
+        - devDependencies: true
+
+  project_eslint_config:
+    max_lines: 22
+    required_structure:
+      extends: ['../../../.eslintrc.js']
+      overrides:
+        - files: ['*.ts', '*.tsx', '*.js', '*.jsx']
+          parserOptions:
+            project: './tsconfig.json'
+            tsconfigRootDir: '__dirname'
+            sourceType: 'module'
+
+# =============================================================================
+# PRETTIER CONFIGURATION STANDARDS
+# =============================================================================
+prettier_standards:
+  configuration:
+    trailingComma: 'all'
+    semi: true
+    singleQuote: true
+    printWidth: 100
+
+# =============================================================================
+# JEST CONFIGURATION STANDARDS
+# =============================================================================
+jest_standards:
+  common_config:
+    preset: 'ts-jest'
+    testEnvironment: 'node'
+    rootDir: './src'
+    roots: ['<rootDir>']
+
+    module_name_mapper:
+      '^src$': '<rootDir>/src'
+      '^src/(.+)$': '<rootDir>/src/$1'
+      '^lib$': '<rootDir>/lib'
+      '^lib/(.+)$': '<rootDir>/lib/$1'
+      "\\.(jpg|jpeg|png|gif|svg)$": '<rootDir>/mocks/fileMock.js'
+      "\\.(css)$": 'identity-obj-proxy'
+
+    test_path_ignore_patterns:
+      - '/node_modules./'
+      - '<rootDir>/(coverage|dist|lib|tmp)./'
+
+    test_regex: "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$(?<!integ-spec\\.ts|e2e-spec\\.ts)$"
+
+    coverage:
+      directory: '../test-results/coverage'
+      reporters_ci: ['lcov']
+      reporters_dev: ['text', 'lcov', 'cobertura', 'text-summary', 'html']
+      collect_from: ['**/*.{ts,js,tsx,jsx}']
+      threshold:
+        global:
+          branches: 100
+          functions: 100
+          lines: 100
+          statements: 100
+
+    reporters:
+      - 'default'
+      - jest_junit:
+          outputDirectory: './test-results/junit'
+          outputName: 'test-results.xml'
+      - jest_performance:
+          errorAfterMs: 1000
+          warnAfterMs: 500
+          logLevel: 'warn'
+          maxItems: 5
+          jsonReportPath: './test-results/performance/performance-report.json'
+
+  project_jest_config:
+    max_lines: 20
+    required_import: "import commonConfig from '../jest.config'"
+
+# =============================================================================
+# STYLING STANDARDS
+# =============================================================================
+styling_standards:
+  stylelint:
+    extends: ['stylelint-config-standard']
+    customSyntax: 'postcss-styled-syntax'
+
+# =============================================================================
+# SONARQUBE STANDARDS
+# =============================================================================
+sonarqube_standards:
+  project_properties:
+    organization: 'ShortPoint'
+    exclusions: 'docs/**/*,docs/*'
+    cpd_exclusions: 'docs/**/*,docs/*,**/**/playwright.config.ts,app1/objects-properties/cdk/**,**/**/auto-generated.ts'
+    coverage_paths: '**/test-results/coverage/lcov.info,**/coverage/storybook/lcov.info'
+    docker_patterns: '**/Dockerfile,**/Dockerfile.*,**/*.dockerfile,**/Containerfile,**/Containerfile.*,**/*.containerfile'
+
+# =============================================================================
+# DOCKER STANDARDS (HADOLINT)
+# =============================================================================
+docker_standards:
+  hadolint_config:
+    failure_threshold: 'warning'
+    strict_labels: true
+    required_labels:
+      - 'maintainer'
+      - 'version'
+      - 'license'
+      - 'description'
+      - 'git_branch'
+      - 'git_hash'
+      - 'created'
+    trusted_registries:
+      - 'docker.io'
+      - '839627326123.dkr.ecr.us-west-2.amazonaws.com/*'
+
+# =============================================================================
+# COMMIT STANDARDS
+# =============================================================================
+commit_standards:
+  commitlint:
+    extends: ['@commitlint/config-conventional']
+    rules:
+      'header-max-length': [2, 'always', 200]
+      'type-enum': [2, 'always', 'from @digitalroute/cz-conventional-changelog-for-jira/types']
+      'subject-case': [0, 'always']
+
+  commitizen_config:
+    path: './node_modules/@digitalroute/cz-conventional-changelog-for-jira'
+    jiraPrepend: '['
+    jiraAppend: ']'
+
+# =============================================================================
+# HUSKY GIT HOOKS
+# =============================================================================
+git_hooks:
+  pre_commit:
+    - 'node scripts/mono-standard-check.mjs'
+    - 'node scripts/find-versions-missmatches.mjs'
+    - 'yarn knip --reporter codeowners --no-exit-code'
+    - 'npx lint-staged --config ./lint-staged.config.js --concurrent false --relative'
+
+  commit_msg:
+    - 'npx --no -- commitlint --edit ${1}'
+
+# =============================================================================
+# LINT-STAGED CONFIGURATION
+# =============================================================================
+lint_staged_standards:
+  typescript_files:
+    pattern: '**/**/*.{ts,tsx}'
+    commands:
+      - 'yarn nx affected --base=origin/main --target=type-check'
+      - 'yarn nx affected --base=origin/main --target=lint --fix'
+      - 'yarn nx affected --base=origin/main --target=lint:css --fix'
+
+  javascript_files:
+    pattern: '**/**/*.{js,jsx,json}'
+    commands:
+      - 'yarn nx affected --base=origin/main --target=lint --fix'
+      - 'yarn nx affected --base=origin/main --target=lint:css --fix'
+
+# =============================================================================
+# NX WORKSPACE STANDARDS
+# =============================================================================
+nx_standards:
+  target_defaults:
+    build:
+      dependsOn: ['^build']
+      outputs: ['{projectRoot}/dist']
+
+    common_dependencies: ['^build']
+    targets:
+      - 'start'
+      - 'serve'
+      - 'publish-artifact'
+      - 'preview'
+      - 'unit-tests'
+      - 'typecheck'
+      - 'e2e-tests'
+      - 'storybook'
+      - 'storybook-build'
+      - 'storybook-serve'
+      - 'storybook-run'
+      - 'storybook-coverage-report'
+      - 'storybook-test-coverage'
+      - 'storybook-tests'
+
+  release_configuration:
+    groups:
+      by_folder: true
+      projectsRelationship: 'independent'
+
+    changelog:
+      git:
+        commit: false
+        tag: true
+      projectChangelogs: true
+
+  parallel: 10
+  affected:
+    defaultBase: 'main'
+
+# =============================================================================
+# KNIP CONFIGURATION STANDARDS
+# =============================================================================
+knip_standards:
+  ignore_dependencies:
+    - 'tslib'
+    - 'vite'
+    - '@app1/.+'
+    - '@app2/.+'
+
+  ignore_binaries:
+    - 'aws'
+    - 'docker-compose'
+
+# =============================================================================
+# DEPENDENCY MANAGEMENT STANDARDS
+# =============================================================================
+dependency_standards:
+  version_policy:
+    prefer_exact_versions: true
+    avoid_caret_tilde: true
+    exceptions:
+      - '@playwright/test' # Fragile package requiring exact version control
+
+  custom_eslint_rules:
+    package_json_dependencies:
+      caret_or_tilde:
+        description: "Disallow '^' or '~' in dependency versions"
+        fixable: true
+        ignore_packages: ['@playwright/test']
+
+# =============================================================================
+# MONOREPO VALIDATION SCRIPT STANDARDS
+# =============================================================================
+validation_standards:
+  mono_standard_check:
+    enforces:
+      - 'Package.json naming conventions'
+      - 'Required fields in package.json'
+      - 'Script standardization'
+      - 'NX tags compliance'
+      - 'TypeScript configuration compliance'
+      - 'ESLint configuration standards'
+      - 'Jest configuration standards'
+      - 'File existence requirements'
+      - 'CODEOWNERS file compliance'
+
+    file_limits:
+      tsconfig_json: 15
+      tsconfig_build_json: 15
+      eslint_config: 22
+      jest_unit_ts: 20
+
+  version_mismatch_check:
+    excludes_packages:
+      '@mui/material': ['5.13.7'] # Version conflicts resolution
+
+    actions:
+      report: true
+      fix_local: '--fix flag'
+      update_latest: '--latest flag'
+
+# =============================================================================
+# REQUIRED DEPENDENCIES
+# =============================================================================
+required_dependencies:
+  core:
+    - 'eslint@8.55.0'
+    - 'typescript@5.3.3'
+    - 'nx@17.2.8'
+    - 'knip@5.14.0'
+
+  eslint_plugins:
+    - '@nx/eslint-plugin@19.0.0'
+    - '@typescript-eslint/eslint-plugin@6.13.2'
+    - '@typescript-eslint/parser@6.13.2'
+    - 'eslint-config-airbnb-base@15.0.0'
+    - 'eslint-config-airbnb-typescript@17.1.0'
+    - 'eslint-config-prettier@9.0.0'
+    - 'eslint-plugin-import@2.29.0'
+    - 'eslint-plugin-jsx-a11y@6.7.1'
+    - 'eslint-plugin-prettier@5.1.0'
+    - 'eslint-plugin-react@7.33.2'
+    - 'eslint-plugin-react-hooks@4.6.0'
+    - 'eslint-plugin-sonarjs@1.0.3'
+
+  commit_tools:
+    - '@commitlint/cli@18.4.3'
+    - '@commitlint/config-conventional@18.4.3'
+    - '@digitalroute/cz-conventional-changelog-for-jira@8.0.1'
+    - 'commitizen@4.3.0'
+    - 'husky@8.0.3'
+    - 'lint-staged@15.0.2'
+
+  formatting:
+    - 'prettier@3.0.3'
+
+# =============================================================================
+# QUALITY ASSURANCE STANDARDS
+# =============================================================================
+quality_standards:
+  test_coverage:
+    minimum_thresholds:
+      branches: 100
+      functions: 100
+      lines: 100
+      statements: 100
+
+  test_types:
+    unit_tests:
+      description: 'Test single functions/methods in isolation'
+      tools: ['Jest']
+      speed: 'fast'
+      cost: 'low'
+
+    integration_tests:
+      description: 'Test how different parts work together'
+      tools: ['Jest', 'NestJS']
+      speed: 'medium'
+      cost: 'medium'
+
+    component_tests:
+      description: 'Test UI components in isolation'
+      tools: ['Storybook']
+      speed: 'medium'
+      cost: 'medium'
+
+    e2e_tests:
+      description: 'Test entire application from user perspective'
+      tools: ['Playwright']
+      speed: 'slow'
+      cost: 'high'
+      usage: 'smoke tests only'
+
+  static_analysis:
+    code_quality_tools:
+      - 'ESLint'
+      - 'SonarQube'
+      - 'Prettier'
+      - 'Stylelint'
+      - 'Hadolint'
+      - 'TypeScript compiler'
+
+# =============================================================================
+# AI AGENT APPLICATION GUIDELINES
+# =============================================================================
+ai_agent_guidelines:
+  priority_order:
+    1. "Apply package.json standards first - MUST create package.json for every app including test apps"
+    2. "Set up yarn workspace configuration"
+    3. "Use ONLY yarn commands for all package management"
+    4. "Set up TypeScript configuration"
+    5. "Configure ESLint with proper extends chain"
+    6. "Add Jest configuration with coverage thresholds"
+    7. "Set up Prettier formatting"
+    8. "Configure Git hooks and commit standards"
+    9. "Add NX workspace configuration if monorepo"
+    10. "Set up SonarQube integration"
+    11. "Configure Docker linting if applicable"
+    12. "Add validation scripts"
+
+  package_manager_instructions:
+    use_yarn_only: 'ALWAYS use yarn commands for dependency management'
+    build_commands: 'Use yarn build, yarn test, yarn start, yarn serve'
+    install_commands: 'Use yarn install, yarn add, yarn add -D, yarn remove'
+    workspace_commands: 'Use yarn workspaces for monorepo management'
+    forbidden: 'NEVER use npm, npx, or pnpm commands'
+
+  package_json_requirements:
+    every_app: 'Every single app in the workspace MUST have its own package.json'
+    testing_apps: 'E2E testing apps like levercast-e2e MUST have package.json'
+    structure: 'package.json must follow @{scope}/{project-name} naming pattern'
+    mandatory_fields: 'name, description (30+ chars), version, author: ShortPoint, license: UNLICENSED'
+
+  adaptation_rules:
+    - 'Maintain core standards but adapt tooling versions to project needs'
+    - 'Keep module boundary enforcement for monorepos'
+    - 'Preserve exact version dependency management'
+    - 'Ensure 100% test coverage thresholds'
+    - 'Maintain consistent naming conventions'
+    - 'Apply appropriate file size limits'
+    - 'Keep Git hook automation'
+
+  validation_checklist:
+    - 'All required files are present'
+    - 'Package.json follows naming conventions'
+    - 'ESLint extends chain is correct'
+    - 'TypeScript configuration is minimal'
+    - 'Test coverage thresholds are enforced'
+    - 'Git hooks are functioning'
+    - 'Dependencies use exact versions'
+    - 'Module boundaries are enforced'
+    - 'Quality gates are in place'
+# =============================================================================
+# END OF CONFIGURATION
+# =============================================================================

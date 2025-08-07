@@ -1,0 +1,458 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "ShortPoint Code Standards & Linting Rules for AI Agents",
+    "author": "ShortPoint",
+    "license": "UNLICENSED",
+    "created": "2025-07-31",
+    "source": "apps-monorepo"
+  },
+  "packageManager": {
+    "required": "yarn",
+    "version": ">=1.22.0",
+    "commands": {
+      "install": "yarn install",
+      "add": "yarn add",
+      "addDev": "yarn add -D",
+      "remove": "yarn remove",
+      "run": "yarn",
+      "build": "yarn build",
+      "test": "yarn test",
+      "workspaces": "yarn workspaces"
+    },
+    "buildInstructions": "Always use yarn commands for dependency management and build processes"
+  },
+  "packageJsonStandards": {
+    "namingPattern": "@{scope}/{project-name}",
+    "requiredForAllApps": true,
+    "includingTestingApps": true,
+    "mandatoryForEveryApp": "Every app in the workspace must have its own package.json file, including e2e testing apps",
+    "requiredFields": {
+      "name": {
+        "format": "@{scope}/{project-name}",
+        "validation": "Must match directory structure"
+      },
+      "description": {
+        "minLength": 30,
+        "required": true
+      },
+      "version": {
+        "format": "semver",
+        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+      },
+      "author": "ShortPoint",
+      "license": "UNLICENSED"
+    },
+    "requiredScripts": {
+      "lint": "eslint . --max-warnings 0 --cache",
+      "typecheck": "tsc --noEmit -p tsconfig.json",
+      "start": "[project-specific]",
+      "serve": "[project-specific]",
+      "build": "[project-specific]",
+      "unit-tests": "[project-specific]",
+      "storybook-tests": "[project-specific]",
+      "e2e-tests": "[project-specific]"
+    },
+    "conditionalScripts": {
+      "lint:css": {
+        "condition": "has *.styles.* files",
+        "value": "stylelint '**/*.(module|styles).*'"
+      }
+    },
+    "nxConfiguration": {
+      "tags": {
+        "required": ["scope:{projectName}"],
+        "format": "scope:@{scope}/{project-name}"
+      }
+    }
+  },
+  "eslintConfiguration": {
+    "rootConfig": {
+      "root": true,
+      "extends": [
+        "eslint:recommended",
+        "plugin:@nx/typescript",
+        "plugin:sonarjs/recommended-legacy",
+        "plugin:prettier/recommended"
+      ],
+      "plugins": ["@nx", "sonarjs"],
+      "parserOptions": {
+        "project": "./tsconfig.base.json",
+        "extraFileExtensions": [".json"]
+      },
+      "ignorePatterns": [
+        "vite.config.ts",
+        "vite-env.d.ts",
+        ".eslintrc.js",
+        "node_modules/",
+        "dist/",
+        "coverage/",
+        "storybook-static/",
+        "lint-staged.config.js",
+        "nest-cli.json",
+        "tsconfig.json",
+        "tsconfig.base.json",
+        "commitlint.config.js",
+        "*.min.js"
+      ]
+    },
+    "typescriptOverrides": {
+      "files": ["*.ts", "*.tsx"],
+      "extends": [
+        "plugin:@nx/typescript",
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "plugin:react-hooks/recommended",
+        "plugin:sonarjs/recommended-legacy",
+        "airbnb-base",
+        "airbnb-typescript/base",
+        "plugin:prettier/recommended"
+      ],
+      "keyRules": {
+        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+        "operator-linebreak": "off",
+        "import/extensions": [
+          "warn",
+          "never",
+          {
+            "module": "ignorePackages",
+            "service": "ignorePackages",
+            "controller": "ignorePackages",
+            "dto": "ignorePackages",
+            "entity": "ignorePackages",
+            "resolver": "ignorePackages",
+            "spec": "ignorePackages",
+            "json": "always"
+          }
+        ]
+      }
+    },
+    "packageJsonOverrides": {
+      "files": ["package.json"],
+      "parserOptions": {
+        "project": null
+      },
+      "plugins": ["package-json-dependencies"],
+      "rules": {
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "sonarjs/no-duplicate-string": "off",
+        "quotes": ["warn", "double"],
+        "object-curly-spacing": ["warn", "always"],
+        "indent": ["warn", 2],
+        "package-json-dependencies/caret-or-tilde": [
+          "warn",
+          { "ignorePackages": ["@playwright/test"] }
+        ]
+      }
+    },
+    "projectConfig": {
+      "maxLines": 22,
+      "requiredStructure": {
+        "extends": ["../../../.eslintrc.js"],
+        "overrides": [
+          {
+            "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+            "parserOptions": {
+              "project": "./tsconfig.json",
+              "tsconfigRootDir": "__dirname",
+              "sourceType": "module"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "typescriptConfiguration": {
+    "tsconfig": {
+      "maxLines": 15,
+      "requiredFields": {
+        "extends": "path ending with tsconfig.base.json"
+      }
+    },
+    "tsconfigBase": {
+      "compilerOptions": {
+        "allowJs": false,
+        "allowSyntheticDefaultImports": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": false,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "ignoreDeprecations": "5.0",
+        "importHelpers": true,
+        "isolatedModules": true,
+        "jsx": "react-jsx",
+        "lib": ["DOM", "DOM.Iterable", "ESNext", "ES2015", "es6"],
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "resolveJsonModule": true,
+        "removeComments": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": false,
+        "suppressImplicitAnyIndexErrors": true,
+        "target": "ESNext",
+        "types": ["node", "vite/client", "jest"],
+        "useDefineForClassFields": true
+      },
+      "exclude": ["**/node_modules", "**/vite.config.ts"]
+    },
+    "tsconfigBuild": {
+      "maxLines": 15,
+      "requiredStructure": {
+        "extends": "./tsconfig.json",
+        "exclude": ["test", "**/*spec.ts", "jest.*"]
+      }
+    }
+  },
+  "prettierConfiguration": {
+    "trailingComma": "all",
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 100
+  },
+  "jestConfiguration": {
+    "commonConfig": {
+      "preset": "ts-jest",
+      "testEnvironment": "node",
+      "rootDir": "./src",
+      "roots": ["<rootDir>"],
+      "moduleNameMapper": {
+        "^src$": "<rootDir>/src",
+        "^src/(.+)$": "<rootDir>/src/$1",
+        "^lib$": "<rootDir>/lib",
+        "^lib/(.+)$": "<rootDir>/lib/$1",
+        "\\.(jpg|jpeg|png|gif|svg)$": "<rootDir>/mocks/fileMock.js",
+        "\\.(css)$": "identity-obj-proxy"
+      },
+      "testPathIgnorePatterns": ["/node_modules./", "<rootDir>/(coverage|dist|lib|tmp)./"],
+      "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$(?<!integ-spec\\.ts|e2e-spec\\.ts)$",
+      "coverageDirectory": "../test-results/coverage",
+      "coverageReporters": {
+        "ci": ["lcov"],
+        "dev": ["text", "lcov", "cobertura", "text-summary", "html"]
+      },
+      "collectCoverageFrom": ["**/*.{ts,js,tsx,jsx}"],
+      "coverageThreshold": {
+        "global": {
+          "branches": 100,
+          "functions": 100,
+          "lines": 100,
+          "statements": 100
+        }
+      }
+    },
+    "projectConfig": {
+      "maxLines": 20,
+      "requiredImport": "import commonConfig from '../jest.config'"
+    }
+  },
+  "commitStandards": {
+    "commitlint": {
+      "extends": ["@commitlint/config-conventional"],
+      "rules": {
+        "header-max-length": [2, "always", 200],
+        "type-enum": [2, "always", "from @digitalroute/cz-conventional-changelog-for-jira/types"],
+        "subject-case": [0, "always"]
+      }
+    },
+    "commitizen": {
+      "path": "./node_modules/@digitalroute/cz-conventional-changelog-for-jira",
+      "jiraPrepend": "[",
+      "jiraAppend": "]"
+    }
+  },
+  "gitHooks": {
+    "preCommit": [
+      "node scripts/mono-standard-check.mjs",
+      "node scripts/find-versions-missmatches.mjs",
+      "yarn knip --reporter codeowners --no-exit-code",
+      "npx lint-staged --config ./lint-staged.config.js --concurrent false --relative"
+    ],
+    "commitMsg": ["npx --no -- commitlint --edit ${1}"]
+  },
+  "lintStagedConfiguration": {
+    "typescriptFiles": {
+      "pattern": "**/**/*.{ts,tsx}",
+      "commands": [
+        "yarn nx affected --base=origin/main --target=type-check",
+        "yarn nx affected --base=origin/main --target=lint --fix",
+        "yarn nx affected --base=origin/main --target=lint:css --fix"
+      ]
+    },
+    "javascriptFiles": {
+      "pattern": "**/**/*.{js,jsx,json}",
+      "commands": [
+        "yarn nx affected --base=origin/main --target=lint --fix",
+        "yarn nx affected --base=origin/main --target=lint:css --fix"
+      ]
+    }
+  },
+  "dependencyStandards": {
+    "versionPolicy": {
+      "preferExactVersions": true,
+      "avoidCaretTilde": true,
+      "exceptions": ["@playwright/test"]
+    },
+    "customEslintRules": {
+      "packageJsonDependencies": {
+        "caretOrTilde": {
+          "description": "Disallow '^' or '~' in dependency versions",
+          "fixable": true,
+          "ignorePackages": ["@playwright/test"]
+        }
+      }
+    }
+  },
+  "qualityStandards": {
+    "testCoverage": {
+      "minimumThresholds": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    },
+    "testTypes": {
+      "unitTests": {
+        "description": "Test single functions/methods in isolation",
+        "tools": ["Jest"],
+        "speed": "fast",
+        "cost": "low"
+      },
+      "integrationTests": {
+        "description": "Test how different parts work together",
+        "tools": ["Jest", "NestJS"],
+        "speed": "medium",
+        "cost": "medium"
+      },
+      "componentTests": {
+        "description": "Test UI components in isolation",
+        "tools": ["Storybook"],
+        "speed": "medium",
+        "cost": "medium"
+      },
+      "e2eTests": {
+        "description": "Test entire application from user perspective",
+        "tools": ["Playwright"],
+        "speed": "slow",
+        "cost": "high",
+        "usage": "smoke tests only"
+      }
+    }
+  },
+  "requiredDependencies": {
+    "core": ["eslint@8.55.0", "typescript@5.3.3", "nx@17.2.8", "knip@5.14.0"],
+    "eslintPlugins": [
+      "@nx/eslint-plugin@19.0.0",
+      "@typescript-eslint/eslint-plugin@6.13.2",
+      "@typescript-eslint/parser@6.13.2",
+      "eslint-config-airbnb-base@15.0.0",
+      "eslint-config-airbnb-typescript@17.1.0",
+      "eslint-config-prettier@9.0.0",
+      "eslint-plugin-import@2.29.0",
+      "eslint-plugin-jsx-a11y@6.7.1",
+      "eslint-plugin-prettier@5.1.0",
+      "eslint-plugin-react@7.33.2",
+      "eslint-plugin-react-hooks@4.6.0",
+      "eslint-plugin-sonarjs@1.0.3"
+    ],
+    "commitTools": [
+      "@commitlint/cli@18.4.3",
+      "@commitlint/config-conventional@18.4.3",
+      "@digitalroute/cz-conventional-changelog-for-jira@8.0.1",
+      "commitizen@4.3.0",
+      "husky@8.0.3",
+      "lint-staged@15.0.2"
+    ],
+    "formatting": ["prettier@3.0.3"]
+  },
+  "aiAgentGuidelines": {
+    "priorityOrder": [
+      "Apply package.json standards first - MUST create package.json for every app including test apps",
+      "Set up yarn workspace configuration",
+      "Use ONLY yarn commands for all package management",
+      "Set up TypeScript configuration",
+      "Configure ESLint with proper extends chain",
+      "Add Jest configuration with coverage thresholds",
+      "Set up Prettier formatting",
+      "Configure Git hooks and commit standards",
+      "Add NX workspace configuration if monorepo",
+      "Set up SonarQube integration",
+      "Configure Docker linting if applicable",
+      "Add validation scripts"
+    ],
+    "packageManagerInstructions": {
+      "useYarnOnly": "ALWAYS use yarn commands for dependency management",
+      "buildCommands": "Use yarn build, yarn test, yarn start, yarn serve",
+      "installCommands": "Use yarn install, yarn add, yarn add -D, yarn remove",
+      "workspaceCommands": "Use yarn workspaces for monorepo management",
+      "forbidden": "NEVER use npm, npx, or pnpm commands"
+    },
+    "packageJsonRequirements": {
+      "everyApp": "Every single app in the workspace MUST have its own package.json",
+      "testingApps": "E2E testing apps like levercast-e2e MUST have package.json",
+      "structure": "package.json must follow @{scope}/{project-name} naming pattern",
+      "mandatoryFields": "name, description (30+ chars), version, author: ShortPoint, license: UNLICENSED"
+    },
+    "adaptationRules": [
+      "Maintain core standards but adapt tooling versions to project needs",
+      "Keep module boundary enforcement for monorepos",
+      "Preserve exact version dependency management",
+      "Ensure 100% test coverage thresholds",
+      "Maintain consistent naming conventions",
+      "Apply appropriate file size limits",
+      "Keep Git hook automation"
+    ],
+    "validationChecklist": [
+      "All required files are present",
+      "Package.json follows naming conventions",
+      "ESLint extends chain is correct",
+      "TypeScript configuration is minimal",
+      "Test coverage thresholds are enforced",
+      "Git hooks are functioning",
+      "Dependencies use exact versions",
+      "Module boundaries are enforced",
+      "Quality gates are in place"
+    ]
+  },
+  "fileLimits": {
+    "tsconfigJson": 15,
+    "tsconfigBuildJson": 15,
+    "eslintConfig": 22,
+    "jestUnitTs": 20
+  },
+  "additionalConfigurations": {
+    "sonarqube": {
+      "exclusions": "docs/**/*,docs/*",
+      "cpdExclusions": "docs/**/*,docs/*,**/**/playwright.config.ts,tb2/objects-properties/cdk/**,**/**/auto-generated.ts",
+      "coveragePaths": "**/test-results/coverage/lcov.info,**/coverage/storybook/lcov.info"
+    },
+    "hadolint": {
+      "failureThreshold": "warning",
+      "strictLabels": true,
+      "requiredLabels": [
+        "maintainer",
+        "version",
+        "license",
+        "description",
+        "git_branch",
+        "git_hash",
+        "created"
+      ]
+    },
+    "stylelint": {
+      "extends": ["stylelint-config-standard"],
+      "customSyntax": "postcss-styled-syntax"
+    },
+    "knip": {
+      "ignoreDependencies": ["tslib", "vite", "@tb2/.+", "@tf/.+"],
+      "ignoreBinaries": ["aws", "docker-compose"]
+    }
+  }
+}

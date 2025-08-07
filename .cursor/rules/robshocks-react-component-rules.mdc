@@ -1,0 +1,136 @@
+---
+description: Rules for the creation and refactoring of components with Convex integration
+globs: src/**/*
+---
+# React Component Development Rules
+
+## Component Best Practices
+
+- Add `(ref: react-comp-rules)` to the start of response messages when applying these rules
+- Don't forget to use `"use client"` at the top of client-side components
+- Use Tailwind CSS for styling components
+- Use shadcn existing components where possible - don't create new ones
+- Use lucide-react icons
+- You can use markdown but don't have to
+- Follow Next.js 15 App Router patterns
+- Use TypeScript strict mode
+- Implement proper error handling and loading states
+
+## Convex Integration in Components
+
+### Always use Convex React hooks for data:
+```typescript
+"use client";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+function PostsList() {
+  const posts = useQuery(api.posts.getPostsByAuthor, { authorId });
+  const createPost = useMutation(api.posts.createPost);
+  
+  if (posts === undefined) return <LoadingSpinner />;
+  
+  return (
+    <div>
+      {posts.map(post => (
+        <PostCard key={post._id} post={post} />
+      ))}
+    </div>
+  );
+}
+```
+
+### Handle real-time updates automatically:
+```typescript
+// Convex provides real-time updates automatically
+function LivePostCount() {
+  const posts = useQuery(api.posts.getPostsByAuthor, { authorId });
+  return <span>Posts: {posts?.length ?? 0}</span>;
+}
+```
+
+## Current Project File Structure (Align with this)
+
+```
+src/
+├── app/                    # Next.js 15 App Router
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── globals.css
+│   ├── api/               # API routes (minimal with Convex)
+│   └── dashboard/         # Dashboard routes
+│       ├── page.tsx
+│       ├── layout.tsx
+│       ├── new-post/
+│       ├── posts/
+│       ├── settings/
+│       └── templates/
+├── components/            # Reusable components
+│   ├── providers/         # Context providers
+│   │   ├── ConvexProvider.tsx
+│   │   └── ThemeProvider.tsx
+│   └── ui/               # shadcn/ui components
+│       ├── button.tsx
+│       ├── card.tsx
+│       └── ...
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility libraries
+│   └── utils.ts
+convex/                   # Convex backend functions
+├── schema.ts
+├── users.ts
+├── posts.ts
+└── templates.ts
+```
+
+## Component Patterns
+
+### Loading States:
+```typescript
+function TemplatesList() {
+  const templates = useQuery(api.templates.getTemplates, { userId });
+  
+  if (templates === undefined) {
+    return <div className="space-y-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Skeleton key={i} className="h-24 w-full" />
+      ))}
+    </div>;
+  }
+  
+  return templates.map(template => 
+    <TemplateCard key={template._id} template={template} />
+  );
+}
+```
+
+### Optimistic Updates:
+```typescript
+function CreatePostButton() {
+  const createPost = useMutation(api.posts.createPost);
+  const [isCreating, setIsCreating] = useState(false);
+  
+  const handleCreate = async () => {
+    setIsCreating(true);
+    try {
+      await createPost({ title, content, authorId });
+      // Real-time updates handle the UI automatically
+    } catch (error) {
+      toast.error("Failed to create post");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+  
+  return (
+    <LoadingButton 
+      onClick={handleCreate} 
+      loading={isCreating}
+    >
+      Create Post
+    </LoadingButton>
+  );
+}
+```    
+
+

@@ -1,0 +1,172 @@
+---
+description: Rules for developing with Convex database and real-time functions
+globs: convex/**/* src/**/*
+---
+# Convex Development Rules
+
+## File Structure and Organization
+
+### Required Directory Structure:
+```
+convex/
+├── schema.ts              # Database schema definition
+├── _generated/            # Auto-generated files (don't edit)
+├── users.ts              # User management functions
+├── posts.ts              # Post management functions
+├── templates.ts          # Template management functions
+├── categories.ts         # Category management functions
+├── socialMediaPlatforms.ts
+└── socialMediaSettings.ts
+```
+
+## Schema Definition Rules
+
+### Always use proper Convex schema syntax:
+```typescript
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+  users: defineTable({
+    clerkId: v.string(),
+    email: v.string(),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_clerk_id", ["clerkId"])
+    .index("by_email", ["email"]),
+});
+```
+
+## Query and Mutation Patterns
+
+### Always use proper typing and validation:
+```typescript
+export const getTemplates = query({
+  args: {
+    userId: v.id("users"),
+    search: v.optional(v.string()),
+    category: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Implementation
+  },
+});
+```
+
+### Use indexes for efficient queries:
+```typescript
+// ✅ CORRECT: Using indexes
+const posts = await ctx.db
+  .query("posts")
+  .withIndex("by_author", (q) => q.eq("authorId", userId))
+  .collect();
+
+// ❌ AVOID: Full table scans
+const posts = await ctx.db
+  .query("posts")
+  .filter((q) => q.eq(q.field("authorId"), userId))
+  .collect();
+```
+
+## Real-time Integration Rules
+
+### Use Convex React hooks in components:
+```typescript
+"use client";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+function PostsList() {
+  const posts = useQuery(api.posts.getPostsByAuthor, { authorId });
+  const createPost = useMutation(api.posts.createPost);
+  
+  // Component logic
+}
+```
+
+### Handle loading and error states:
+```typescript
+function PostsList() {
+  const posts = useQuery(api.posts.getPostsByAuthor, { authorId });
+  
+  if (posts === undefined) return <LoadingSpinner />;
+  if (posts === null) return <div>Error loading posts</div>;
+  
+  return posts.map(post => <PostCard key={post._id} post={post} />);
+}
+```
+
+## Best Practices
+
+1. **Always validate inputs** with Convex validators (`v.*`)
+2. **Use timestamps** as numbers (Date.now()) for consistency
+3. **Implement proper indexing** for query performance
+4. **Handle permissions** within Convex functions
+5. **Use transactions** for related operations
+6. **Leverage search indexes** for full-text search
+7. **Keep functions focused** - one responsibility per function
+8. **Use meaningful names** for functions and arguments
+
+## Error Handling
+
+```typescript
+export const updateTemplate = mutation({
+  args: { templateId: v.id("templates"), title: v.string() },
+  handler: async (ctx, args) => {
+    const template = await ctx.db.get(args.templateId);
+    if (!template) {
+      throw new Error("Template not found");
+    }
+    
+    // Permission check
+    if (template.authorId !== userId) {
+      throw new Error("Access denied");
+    }
+    
+    await ctx.db.patch(args.templateId, {
+      title: args.title,
+      updatedAt: Date.now(),
+    });
+    
+    return await ctx.db.get(args.templateId);
+  },
+});
+```
+
+## Authentication Integration
+
+```typescript
+// Get current user in Convex function
+import { getCurrentUserOrThrow } from "convex/server";
+
+export const createPost = mutation({
+  args: { title: v.string(), content: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+    
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+      
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    return await ctx.db.insert("posts", {
+      ...args,
+      authorId: user._id,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+```

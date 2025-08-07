@@ -1,0 +1,128 @@
+---
+description: Guidelines for creating files, folders, and components in the Convex-based project
+globs: src/**/* convex/**/*
+---
+
+# File and Component Creation Guidelines
+
+When creating or modifying files, folders and/or components:
+
+## Core Requirements
+- Use `'use client'` directive for client-side components that use Convex hooks
+- Use Tailwind CSS utility classes for breakpoints and responsiveness
+- Use shadcn components where possible for design and style
+- Follow the established project structure with Convex integration
+
+## Project Structure Standards
+
+### Frontend (src/)
+```
+src/
+├── app/                    # Next.js 15 App Router
+│   ├── layout.tsx         # Root layout with ConvexProvider
+│   ├── page.tsx
+│   ├── globals.css
+│   ├── api/               # Minimal API routes (webhooks only)
+│   │   └── clerk/
+│   │       └── webhook/
+│   └── dashboard/         # Protected dashboard routes
+│       ├── layout.tsx     # Dashboard layout
+│       ├── page.tsx       # Dashboard home
+│       ├── posts/         # Post management
+│       ├── templates/     # Template management
+│       └── settings/      # User settings
+├── components/
+│   ├── providers/
+│   │   ├── ConvexProvider.tsx    # Convex client provider
+│   │   └── ThemeProvider.tsx
+│   └── ui/                # shadcn/ui components
+├── hooks/                 # Custom hooks (Convex + others)
+├── lib/
+│   └── utils.ts
+└── types/                 # TypeScript type definitions
+```
+
+### Backend (convex/)
+```
+convex/
+├── schema.ts              # Database schema definition
+├── _generated/            # Auto-generated (don't modify)
+├── users.ts              # User management functions
+├── posts.ts              # Post CRUD operations
+├── templates.ts          # Template management
+├── categories.ts         # Category operations
+├── socialMediaPlatforms.ts
+├── socialMediaSettings.ts
+└── http.ts               # HTTP actions (webhooks)
+```
+
+## Component Creation Patterns
+
+### Client Components with Convex:
+```typescript
+"use client";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Button } from "@/components/ui/button";
+
+export function PostsList() {
+  const posts = useQuery(api.posts.getPostsByAuthor, { authorId });
+  const deletePost = useMutation(api.posts.deletePost);
+  
+  if (posts === undefined) return <LoadingSkeleton />;
+  
+  return (
+    <div className="space-y-4">
+      {posts.map(post => (
+        <PostCard 
+          key={post._id} 
+          post={post} 
+          onDelete={() => deletePost({ postId: post._id })}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+### Server Components (when possible):
+```typescript
+// Use for static content, layouts, etc.
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex h-screen">
+      <Sidebar />
+      <main className="flex-1 p-6">
+        {children}
+      </main>
+    </div>
+  );
+}
+```
+
+## Naming Conventions
+
+### Files:
+- **Components**: PascalCase (`PostCard.tsx`)
+- **Pages**: lowercase (`page.tsx`, `layout.tsx`)
+- **Convex functions**: camelCase (`posts.ts`, `users.ts`)
+- **Hooks**: camelCase starting with `use` (`useAuth.ts`)
+
+### Convex Functions:
+- **Queries**: descriptive names (`getPostsByAuthor`, `getTemplates`)
+- **Mutations**: action-based names (`createPost`, `updateTemplate`)
+- **Internal**: prefix with underscore (`_generateSlug`)
+
+## Best Practices
+
+1. **Always validate** Convex function inputs with validators
+2. **Handle loading states** for all Convex queries
+3. **Use optimistic updates** for better UX
+4. **Implement error boundaries** for robust error handling
+5. **Follow accessibility** guidelines (ARIA labels, keyboard navigation)
+6. **Keep functions focused** - single responsibility principle
+7. **Use TypeScript strictly** - no `any` types
