@@ -12,9 +12,9 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login, signup, isAuthenticated, isLoading } = useAuth();
@@ -23,7 +23,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/');
+      router.push("/");
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -45,31 +45,38 @@ export default function LoginPage() {
     return "";
   };
 
-  const validateConfirmPassword = (confirmPassword: string, password: string) => {
+  const validateConfirmPassword = (
+    confirmPassword: string,
+    password: string
+  ) => {
     if (isSignUp && !confirmPassword) return "Please confirm your password";
-    if (isSignUp && confirmPassword !== password) return "Passwords do not match";
+    if (isSignUp && confirmPassword !== password)
+      return "Passwords do not match";
     return "";
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isSubmitting) return;
 
-    const newErrors: {[key: string]: string} = {};
+    const newErrors: { [key: string]: string } = {};
 
     // Validate all fields
     const emailError = validateEmail(formData.email);
     const passwordError = validatePassword(formData.password);
-    const confirmPasswordError = validateConfirmPassword(formData.confirmPassword, formData.password);
+    const confirmPasswordError = validateConfirmPassword(
+      formData.confirmPassword,
+      formData.password
+    );
 
     if (emailError) newErrors.email = emailError;
     if (passwordError) newErrors.password = passwordError;
@@ -86,7 +93,9 @@ export default function LoginPage() {
         if (isSignUp) {
           success = await signup(formData.email, formData.password);
           if (!success) {
-            setErrors({ email: "Only shortpoint.com domain users can sign up" });
+            setErrors({
+              email: "Only shortpoint.com domain users can sign up",
+            });
           }
         } else {
           success = await login(formData.email, formData.password);
@@ -97,7 +106,7 @@ export default function LoginPage() {
 
         if (success) {
           // Redirect will be handled by useEffect
-          router.push('/');
+          router.push("/");
         }
       } catch {
         setErrors({ password: "An error occurred. Please try again." });
@@ -114,171 +123,235 @@ export default function LoginPage() {
   // Show loading while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="text-gray-600 text-sm">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#f5f6fa] to-[#e8eef7] flex items-center justify-center px-4">
+        <div className="flex flex-col items-center space-y-6 text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#3161D1]/20 border-t-[#3161D1]"></div>
+            <div
+              className="absolute inset-0 rounded-full border-4 border-transparent border-r-[#7DD3C0] animate-spin"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-[#202224] text-lg font-semibold">Loading...</p>
+            <p className="text-[#5774A8] text-sm">Preparing your experience</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-[#f5f6fa] to-[#e8eef7] flex flex-col justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-sm mx-auto sm:max-w-md">
         {/* ShortPoint Logo */}
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-8">
           <Image
             src="/shortpoint-logo.svg"
             alt="ShortPoint"
             width={200}
             height={60}
-            className="h-12 w-auto"
+            className="h-10 w-auto sm:h-12 transition-all duration-300"
           />
         </div>
 
-        <h2 className="mt-6 text-center text-3xl font-medium text-gray-900">
-          {isSignUp ? "Create Account" : "Login to Account"}
-        </h2>
+        <div className="text-center mb-8">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-[#202224] mb-2">
+            {isSignUp ? "Create Account" : "Welcome Back"}
+          </h1>
+          <p className="text-sm sm:text-base text-[#5774A8]">
+            {isSignUp
+              ? "Join the ShortPoint community"
+              : "Sign in to access your dashboard"}
+          </p>
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+      <div className="w-full max-w-sm mx-auto sm:max-w-md">
+        <div className="bg-white py-6 px-4 shadow-xl rounded-2xl sm:py-8 sm:px-10 backdrop-blur-sm border border-white/20">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email<span className="text-red-500">*</span>
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-[#202224]"
+              >
+                Email Address<span className="text-[#ef4444] ml-1">*</span>
               </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-[#ADB5BD]" />
                 </div>
                 <input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Your email"
-                  className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="Enter your email"
+                  className={`w-full pl-12 pr-4 py-4 text-base border-2 transition-all duration-200 rounded-xl bg-[#f8f9fa] focus:bg-white placeholder-[#ADB5BD] focus:outline-none touch-manipulation ${
+                    errors.email
+                      ? "border-[#ef4444] focus:border-[#ef4444] focus:ring-4 focus:ring-[#ef4444]/20"
+                      : "border-transparent focus:border-[#3161D1] focus:ring-4 focus:ring-[#3161D1]/20"
+                  }`}
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                <div className="flex items-center space-x-2 mt-2">
+                  <div className="w-1 h-1 bg-[#ef4444] rounded-full"></div>
+                  <p className="text-sm text-[#ef4444] font-medium">
+                    {errors.email}
+                  </p>
+                </div>
               )}
             </div>
 
             {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password<span className="text-red-500">*</span>
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-[#202224]"
+              >
+                Password<span className="text-[#ef4444] ml-1">*</span>
               </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-[#ADB5BD]" />
                 </div>
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  className={`appearance-none block w-full pl-10 pr-10 py-2 border ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  placeholder="Enter your password"
+                  className={`w-full pl-12 pr-14 py-4 text-base border-2 transition-all duration-200 rounded-xl bg-[#f8f9fa] focus:bg-white placeholder-[#ADB5BD] focus:outline-none touch-manipulation ${
+                    errors.password
+                      ? "border-[#ef4444] focus:border-[#ef4444] focus:ring-4 focus:ring-[#ef4444]/20"
+                      : "border-transparent focus:border-[#3161D1] focus:ring-4 focus:ring-[#3161D1]/20"
+                  }`}
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
                   <button
                     type="button"
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-[#ADB5BD] hover:text-[#3161D1] transition-colors p-2 touch-manipulation"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff className="h-5 w-5" data-testid="eye-icon" />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye className="h-5 w-5" data-testid="eye-icon" />
                     )}
                   </button>
                 </div>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                <div className="flex items-center space-x-2 mt-2">
+                  <div className="w-1 h-1 bg-[#ef4444] rounded-full"></div>
+                  <p className="text-sm text-[#ef4444] font-medium">
+                    {errors.password}
+                  </p>
+                </div>
               )}
             </div>
 
             {/* Confirm Password Field (only for sign up) */}
             {isSignUp && (
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm Password<span className="text-red-500">*</span>
+              <div className="space-y-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-semibold text-[#202224]"
+                >
+                  Confirm Password<span className="text-[#ef4444] ml-1">*</span>
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-[#ADB5BD]" />
                   </div>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
-                    placeholder="Confirm Password"
-                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-                      errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    autoComplete="new-password"
+                    placeholder="Confirm your password"
+                    className={`w-full pl-12 pr-4 py-4 text-base border-2 transition-all duration-200 rounded-xl bg-[#f8f9fa] focus:bg-white placeholder-[#ADB5BD] focus:outline-none touch-manipulation ${
+                      errors.confirmPassword
+                        ? "border-[#ef4444] focus:border-[#ef4444] focus:ring-4 focus:ring-[#ef4444]/20"
+                        : "border-transparent focus:border-[#3161D1] focus:ring-4 focus:ring-[#3161D1]/20"
+                    }`}
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
                   />
                 </div>
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <div className="w-1 h-1 bg-[#ef4444] rounded-full"></div>
+                    <p className="text-sm text-[#ef4444] font-medium">
+                      {errors.confirmPassword}
+                    </p>
+                  </div>
                 )}
               </div>
             )}
 
             {/* Submit Button */}
-            <div>
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center items-center py-4 px-6 text-base font-semibold text-white bg-gradient-to-r from-[#3161D1] to-[#4A73DF] rounded-xl shadow-lg hover:shadow-xl hover:from-[#2a56c7] hover:to-[#3d66d4] focus:outline-none focus:ring-4 focus:ring-[#3161D1]/30 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none touch-manipulation"
               >
                 {isSubmitting ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    {isSignUp ? "Signing up..." : "Logging in..."}
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                    <span>
+                      {isSignUp ? "Creating Account..." : "Signing In..."}
+                    </span>
                   </div>
                 ) : (
-                  isSignUp ? "Sign Up" : "Login"
+                  <span className="flex items-center">
+                    {isSignUp ? "Create Account" : "Sign In"}
+                  </span>
                 )}
               </button>
             </div>
 
             {/* Forgot Password (only for login) */}
             {!isSignUp && (
-              <div className="text-center">
+              <div className="text-center pt-2">
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  className="text-sm font-medium text-[#3161D1] hover:text-[#2a56c7] transition-colors py-2 px-4 rounded-lg hover:bg-[#3161D1]/5 touch-manipulation"
                 >
-                  Forgot password?
+                  Forgot your password?
                 </button>
               </div>
             )}
           </form>
 
           {/* Toggle between Sign In and Sign Up */}
-          <div className="mt-6">
+          <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-[#eaeaea]" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  {isSignUp ? "Already have an account?" : "Don't have an account?"}
+                <span className="px-4 bg-white text-[#5774A8] font-medium">
+                  {isSignUp ? "Already have an account?" : "New to ShortPoint?"}
                 </span>
               </div>
             </div>
@@ -291,7 +364,7 @@ export default function LoginPage() {
                   setFormData({ email: "", password: "", confirmPassword: "" });
                   setErrors({});
                 }}
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="w-full flex justify-center items-center py-4 px-6 border-2 border-[#eaeaea] rounded-xl text-base font-semibold text-[#202224] bg-white hover:bg-[#f8f9fa] hover:border-[#3161D1] focus:outline-none focus:ring-4 focus:ring-[#3161D1]/20 transition-all duration-200 touch-manipulation"
               >
                 {isSignUp ? "Sign In Instead" : "Create Account"}
               </button>
